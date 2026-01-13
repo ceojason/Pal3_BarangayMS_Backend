@@ -1,7 +1,7 @@
 package com.javaguides.sps.service;
 
 import com.javaguides.sps.enums.*;
-import com.javaguides.sps.helper.StringMessagesUtils;
+import com.javaguides.sps.helper.StringMessagesUtil;
 import com.javaguides.sps.jdbc.repository.*;
 import com.javaguides.sps.model.*;
 import com.javaguides.sps.helper.DateUtil;
@@ -14,8 +14,8 @@ import com.javaguides.sps.model.returnmodel.StudentReturnModel;
 import com.javaguides.sps.service.baseservice.BaseServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -307,7 +307,7 @@ public class StudentEnrollmentServiceImpl extends BaseServiceImpl implements Stu
                     }
                 }
             }else{
-                errorList.add(StringMessagesUtils.NO_SUBJECTS_WERE_FOUND);
+                errorList.add(StringMessagesUtil.NO_SUBJECTS_WERE_FOUND);
             }
         }
     }
@@ -356,7 +356,7 @@ public class StudentEnrollmentServiceImpl extends BaseServiceImpl implements Stu
             }
         }
 
-        modelObj.setAckMessage(StringMessagesUtils.formatMsgString(StringMessagesUtils.SAVED_SINGLE_SUFFIX, SystemUserEnum.STUDENT.getDscp()));
+        modelObj.setAckMessage(StringMessagesUtil.formatMsgString(StringMessagesUtil.SAVED_SINGLE_SUFFIX, SystemUserEnum.STUDENT.getDscp()));
         modelObj.setRefNo(generateReferenceNumber(ServicesEnum.ADD_STUDENT.getCode()));
         modelObj.setCreatedBy("SYSTEM");
         modelObj.setTxnDscp(ServicesEnum.ADD_STUDENT.getServiceDscp());
@@ -390,14 +390,14 @@ public class StudentEnrollmentServiceImpl extends BaseServiceImpl implements Stu
                 subjectsJDBCRepository.deleteByLrn(lrn, true);
                 subjectsJDBCRepository.deleteByLrn(lrn, false);
             }else{
-                errorList.add(StringMessagesUtils.formatMsgString(StringMessagesUtils.NO_STUDENT_LRN_WAS_FOUND, lrn));
+                errorList.add(StringMessagesUtil.formatMsgString(StringMessagesUtil.NO_STUDENT_LRN_WAS_FOUND, lrn));
             }
         }
 
         if (!errorList.isEmpty()) { throwErrorMessages(errorList); }
 
         returnObj.setTxnDscp(ServicesEnum.DELETE_STUDENT.getServiceDscp());
-        returnObj.setAckMessage(StringMessagesUtils.formatMsgString(StringMessagesUtils.DELETED_SINGLE_SUFFIX, SystemUserEnum.STUDENT.getDscp()));
+        returnObj.setAckMessage(StringMessagesUtil.formatMsgString(StringMessagesUtil.DELETED_SINGLE_SUFFIX, SystemUserEnum.STUDENT.getDscp()));
         returnObj.setRefNo(generateReferenceNumber(ServicesEnum.DELETE_STUDENT.getCode()));
         returnObj.setCreatedBy("SYSTEM");
         return returnObj;

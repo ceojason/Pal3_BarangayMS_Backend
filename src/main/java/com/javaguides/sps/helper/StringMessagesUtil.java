@@ -1,8 +1,8 @@
 package com.javaguides.sps.helper;
 
-public final class StringMessagesUtils {
+public final class StringMessagesUtil {
 
-    private StringMessagesUtils() {}
+    private StringMessagesUtil() {}
 
     public static final String SAVED_SINGLE_SUFFIX = "{} was successfully enrolled.";
     public static final String UPDATED_SINGLE_SUFFIX = "{} was successfully updated.";

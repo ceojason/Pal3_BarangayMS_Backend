@@ -105,7 +105,6 @@ public class StudentModel extends BaseModel {
     @Transient
     public String sectionNm;
 
-
     public String getStudentFullNm(){
         StringBuilder fullNm = new StringBuilder();
         if (firstNm!=null) fullNm.append(firstNm);
