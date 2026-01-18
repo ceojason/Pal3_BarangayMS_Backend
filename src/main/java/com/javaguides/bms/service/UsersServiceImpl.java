@@ -1,0 +1,212 @@
+package com.javaguides.bms.service;
+
+import com.javaguides.bms.enums.*;
+import com.javaguides.bms.helper.DateUtil;
+import com.javaguides.bms.helper.KeyHasher;
+import com.javaguides.bms.helper.StringMessagesUtil;
+import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
+import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
+import com.javaguides.bms.model.LoginCreds;
+import com.javaguides.bms.model.StudentModel;
+import com.javaguides.bms.model.UsersModel;
+import com.javaguides.bms.model.basemodel.SmsModel;
+import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
+import com.javaguides.bms.model.returnmodel.UsersReturnModel;
+import com.javaguides.bms.service.baseservice.BaseServiceImpl;
+import com.javaguides.bms.service.baseservice.SmsService;
+import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Service
+@AllArgsConstructor
+public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
+
+    private final UsersJDBCRepository usersJDBCRepository;
+    private final LoginJDBCRepository loginJDBCRepository;
+    private final SmsService smsService;
+    private final AuditLogService auditLogService;
+    static final String IS_REQUIRED_SUFFIX = " is required.";
+
+    @Override
+    public UsersReturnModel searchUsers() {
+        return null;
+    }
+
+    @Override
+    public UsersReturnModel validateEnrollment(EnrollmentRequest requestObj) {
+        UsersModel modelObj = new UsersModel(requestObj);
+        return validateObj(modelObj);
+    }
+
+    public UsersReturnModel validateObj(UsersModel modelObj) {
+        List<String> errorList = new ArrayList<>();
+
+        if (modelObj.getFirstNm()==null){
+            errorList.add("First Name" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setFirstNm(modelObj.getFirstNm().trim().toUpperCase());
+        }
+
+        if (modelObj.getMiddleNm()!=null) {
+            modelObj.setMiddleNm(modelObj.getMiddleNm().trim().toUpperCase());
+        }
+
+        if (modelObj.getLastNm()==null){
+            errorList.add("Last Name" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setLastNm(modelObj.getLastNm().trim().toUpperCase());
+        }
+
+        if (modelObj.getSuffix()!=null) {
+            modelObj.setSuffix(modelObj.getSuffix().trim().toUpperCase());
+        }
+
+        if (modelObj.getGender()==null) {
+            errorList.add("Gender" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setGenderDscp(GenderEnum.getGenderDscpFromKeyStr(modelObj.getGender()));
+        }
+
+        if (modelObj.getHomeAddress()==null) {
+            errorList.add("Home Address" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setHomeAddress(modelObj.getHomeAddress().trim().toUpperCase());
+        }
+
+        if (modelObj.getMobileNo()==null) {
+            errorList.add("Mobile Number" + IS_REQUIRED_SUFFIX);
+        }else{
+            checkIfOnlyNumber(modelObj.getMobileNo(), "Mobile Number", errorList);
+            maxStringCharCounter(modelObj.getMobileNo(), 11, "Mobile Number", errorList);
+            minStringCharCounter(modelObj.getMobileNo(), 11, "Mobile Number", errorList);
+            String to = modelObj.getMobileNo();
+            if (modelObj.getMobileNo().startsWith("0")) {
+                modelObj.setFormattedMobileNo("+63" + to.substring(1));
+            }
+        }
+
+        if (modelObj.getEmailAddress()==null) {
+            errorList.add("Email Address" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setEmailAddress(modelObj.getEmailAddress().trim());
+        }
+
+        if (modelObj.getBirthDt()==null) {
+            errorList.add("Birth date" + IS_REQUIRED_SUFFIX);
+        }else{
+            boolean isValidDt = DateUtil.checkValidDateFrom(modelObj.getBirthDt(), 10);
+            if (isValidDt) {
+                modelObj.setBirthDtString(DateUtil.getDateStringWithFormat(modelObj.getBirthDt(), DateFormatEnum.DT_FORMAT_1.getPattern()));
+            }else{
+                errorList.add("Invalid birth date.");
+            }
+        }
+
+        if (modelObj.getBirthPlace()==null) {
+            errorList.add("Birth place" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setBirthPlace(modelObj.getBirthPlace().toUpperCase().trim());
+        }
+
+        if (modelObj.getCivilStatusKey()==null) {
+            errorList.add("Civil Status" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setCivilStatusString(CivilStatusEnum.getCivilStatusDescByKey(modelObj.getCivilStatusKey()));
+        }
+
+        if (modelObj.getPhaseKey()==null) {
+            errorList.add("Purok" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setPhaseString(PhaseEnum.getDesc2ByKey(modelObj.getPhaseKey()));
+        }
+
+        if (modelObj.getHouseholdKey()!=null) {}
+
+        if (modelObj.getOccupation()!=null) {
+            modelObj.setOccupation(modelObj.getOccupation().toUpperCase().trim());
+        }
+
+        if (modelObj.getReligion()==null) {
+            errorList.add("Religion" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setReligion(modelObj.getReligion().toUpperCase().trim());
+        }
+
+        if (modelObj.getIsRegisteredVoter()==null) {
+            errorList.add("Is Registered Voter?" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setIsRegisteredVoterString(YesOrNoEnum.getDescByKey(modelObj.getIsRegisteredVoter()));
+        }
+
+        if (modelObj.getResidentClassKeys()==null || modelObj.getResidentClassKeys().isEmpty()) {
+            errorList.add("Resident Classification" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setClassificationKey(modelObj.getClassificationKeyString());
+        }
+
+        if (modelObj.getDateEnrolled()==null) {
+            modelObj.setDateEnrolled(new Date());
+        }
+
+        modelObj.setStatus(SystemStatusEnum.ACTIVE.getKey());
+
+        if (!errorList.isEmpty()) throwErrorMessages(errorList);
+        return new UsersReturnModel(modelObj);
+    }
+
+    @Override
+    public UsersReturnModel saveEnrollment(EnrollmentRequest requestObj, HttpSession session) {
+        UsersModel modelObj = new UsersModel(requestObj);
+        validateObj(modelObj);
+        UsersReturnModel returnObj = new UsersReturnModel(modelObj);
+
+        boolean isSaved = usersJDBCRepository.saveEnrollment(modelObj)>0;
+        if (isSaved) {
+            try {
+                saveLoginCreds(modelObj);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
+                StringMessagesUtil.SAVED_SINGLE_SUFFIX,
+                StringMessagesUtil.USER
+                ));
+        returnObj.setRefNo(generateReferenceNumber(null));
+        Object user = session.getAttribute("user");
+        if (user instanceof LoginCreds currentUser) {
+            returnObj.setCreatedBy(currentUser.getCd());
+        }
+        return returnObj;
+    }
+
+    public void saveLoginCreds(UsersModel modelObj) throws Exception {
+        String defaultPass = KeyHasher.generateDefaultPassword();
+        String defaultCd = KeyHasher.generateDefaultCd().toUpperCase();
+
+        LoginCreds loginCreds = new LoginCreds();
+        loginCreds.setUserId(modelObj.getId());
+        loginCreds.setCd(defaultCd);
+        loginCreds.setLoginStatus(SystemStatusEnum.LOGGED_OUT.getKey());
+        loginCreds.setRole(SystemUserEnum.SYSTEM_USER.getKey());
+        loginCreds.setSalt(KeyHasher.generateSalt());
+        loginCreds.setPassword(KeyHasher.hashPassword(defaultPass, loginCreds.getSalt()));
+        loginCreds.setUpdatedDt(new Date());
+
+        loginJDBCRepository.saveLoginCreds(loginCreds);
+
+        SmsModel sms = new SmsModel();
+        sms.setRecipient(modelObj.getFormattedMobileNo());
+        sms.setMessage("Hi " + modelObj.getFirstNm()  + "! User ID: " + defaultCd + ", Password: " + defaultPass);
+
+        //smsService.sendSms(modelObj.getFormattedMobileNo());
+    }
+
+}
+

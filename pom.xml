@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.javaguides</groupId>
-	<artifactId>sps_backend</artifactId>
+	<artifactId>bms_backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>sps_backend</name>
-	<description>Student Portal System</description>
+	<name>bms_backend</name>
+	<description>Pal3 Barangay Management System</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -53,6 +53,16 @@
 <!--            <artifactId>jjwt-jackson</artifactId>-->
 <!--            <version>0.11.5</version>-->
 <!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>10.4.1</version>
+        </dependency>
+        <!-- pom.xml -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-webflux</artifactId>-->
 <!--        </dependency>-->
 
         <dependency>
