@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
-@NoArgsConstructor
 public class SmsServiceImpl extends BaseServiceImpl implements SmsService {
 
 //    @Value("${twilio.account.sid}")
@@ -21,7 +19,6 @@ public class SmsServiceImpl extends BaseServiceImpl implements SmsService {
 //    @Value("${twilio.phone.number}")
 //    private String twilioPhoneNumber;
 
-    @Override
     public void sendSms(String phoneNumber) {
 //        Twilio.init(accountSid, authToken);
 //        Message.creator(
