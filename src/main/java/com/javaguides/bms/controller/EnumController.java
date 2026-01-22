@@ -25,6 +25,21 @@ public class EnumController {
         return new ApiResponseModel(enumService.getEnrolleeTypeList());
     }
 
+    @GetMapping("/getSmsTypeList")
+    public ApiResponseModel getSmsTypeList() {
+        return new ApiResponseModel(enumService.getSmsTypeList());
+    }
+
+    @GetMapping("/getAlertStatusList")
+    public ApiResponseModel getAlertStatusList() {
+        return new ApiResponseModel(enumService.getAlertStatusList());
+    }
+
+    @GetMapping("/getChannelList")
+    public ApiResponseModel getChannelList() {
+        return new ApiResponseModel(enumService.getChannelList());
+    }
+
     @GetMapping("/getServiceListForNav")
     public ApiResponseModel getServiceListForNav() {
         return new ApiResponseModel(enumService.getServiceListForNav());
@@ -53,6 +68,11 @@ public class EnumController {
     @GetMapping("/getResidentTypeList")
     public ApiResponseModel getResidentTypeList() {
         return new ApiResponseModel(enumService.getResidentTypeList());
+    }
+
+    @GetMapping("/getAllResidentTypeList")
+    public ApiResponseModel getAllResidentTypeList() {
+        return new ApiResponseModel(enumService.getAllResidentTypeList());
     }
 
     @GetMapping("/getYearlevelList")

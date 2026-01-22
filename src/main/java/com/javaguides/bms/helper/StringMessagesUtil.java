@@ -18,6 +18,8 @@ public final class StringMessagesUtil {
     public static final String IS_REQUIRED_SUFFIX = "{} is required.";
     public static final String INVALID_OBJ = "Invalid {}.";
 
+    public static final String SENT_SINGLE_SUFFIX = "{} was successfully created and sent.";
+    public static final String SENT_MULTIPLE_SUFFIX = "{} were successfully created and sent.";
 
 
     /////////////////////// object || variable names ///////////////////////
@@ -30,6 +32,8 @@ public final class StringMessagesUtil {
     public static final String MOBILE_NO = "Mobile Number";
     public static final String BIRTHDAY = "Birthday";
     public static final String USER = "User";
+    public static final String ANNOUNCEMENT = "Announcement";
+    public static final String ANNOUNCEMENTS = "Announcements";
 
 
     ///////////////////////////////////////////////////////////////////////

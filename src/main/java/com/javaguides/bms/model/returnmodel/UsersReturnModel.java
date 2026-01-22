@@ -1,5 +1,7 @@
 package com.javaguides.bms.model.returnmodel;
 
+import com.javaguides.bms.enums.*;
+import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.model.UsersModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +16,7 @@ import java.util.List;
 public class UsersReturnModel {
 
     private String id;
+    private String cd;
     private String firstNm;
     private String middleNm;
     private String lastNm;
@@ -41,6 +44,9 @@ public class UsersReturnModel {
     private Integer civilStatusKey;
     private String civilStatusString;
 
+    private Integer status;
+    private String statusString;
+
     private Integer isRegisteredVoter;
     private String isRegisteredVoterString;
 
@@ -51,35 +57,39 @@ public class UsersReturnModel {
 
     public UsersReturnModel(UsersModel modelObj) {
         this.id = modelObj.getId();
+        this.cd = modelObj.getCd();
         this.firstNm = modelObj.getFirstNm();
         this.middleNm = modelObj.getMiddleNm();
         this.lastNm = modelObj.getLastNm();
         this.fullNm = modelObj.getFullNm();
         this.suffix = modelObj.getSuffix();
         this.birthDt = modelObj.getBirthDt();
-        this.birthDtString = modelObj.getBirthDtString();
+        this.birthDtString = DateUtil.getDateStringWithFormat(birthDt, DateFormatEnum.DT_FORMAT_1.getPattern());
         this.birthPlace = modelObj.getBirthPlace();
         this.gender = modelObj.getGender();
-        this.genderDscp = modelObj.getGenderDscp();
+        this.genderDscp = GenderEnum.getGenderDscpFromKeyStr(gender);
         this.civilStatusKey = modelObj.getCivilStatusKey();
-        this.civilStatusString = modelObj.getCivilStatusString();
+        this.civilStatusString = CivilStatusEnum.getCivilStatusDescByKey(civilStatusKey);
         this.mobileNo = modelObj.getMobileNo();
         this.formattedMobileNo = modelObj.getFormattedMobileNo();
         this.homeAddress = modelObj.getHomeAddress();
         this.emailAddress = modelObj.getEmailAddress();
         this.occupation = modelObj.getOccupation();
         this.religion = modelObj.getReligion();
-        this.residentClassKeys = modelObj.getResidentClassKeys();
+        this.residentClassKeys = modelObj.getClassificationKeyList();
         this.classificationTypeString = modelObj.getClassificationKeyStringForDisplay();
         this.phaseKey = modelObj.getPhaseKey();
         this.dateEnrolled = modelObj.getDateEnrolled();
         this.dateEnrolledString = modelObj.getDateEnrolledString();
 
-        this.phaseString = modelObj.getPhaseString();
+        this.status = modelObj.getStatus();
+        this.statusString = SystemStatusEnum.getDscpByKey(status);
+
+        this.phaseString = PhaseEnum.getDesc2ByKey(phaseKey);
         this.occupation = modelObj.getOccupation();
         this.religion = modelObj.getReligion();
         this.isRegisteredVoter = modelObj.getIsRegisteredVoter();
-        this.isRegisteredVoterString = modelObj.getIsRegisteredVoterString();
+        this.isRegisteredVoterString = YesOrNoEnum.getDescByKey(isRegisteredVoter);
     }
 
 }

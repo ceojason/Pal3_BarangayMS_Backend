@@ -5,17 +5,21 @@ import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.helper.KeyHasher;
 import com.javaguides.bms.helper.StringMessagesUtil;
 import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
+import com.javaguides.bms.jdbc.repository.NotifLogsJDBCRepository;
 import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
 import com.javaguides.bms.model.LoginCreds;
-import com.javaguides.bms.model.StudentModel;
+import com.javaguides.bms.model.NotifLogsModel;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.basemodel.SmsModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
+import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.UsersReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
 import com.javaguides.bms.service.baseservice.SmsService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,13 +32,15 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
     private final UsersJDBCRepository usersJDBCRepository;
     private final LoginJDBCRepository loginJDBCRepository;
+    private final NotifLogsJDBCRepository notifLogsJDBCRepository;
     private final SmsService smsService;
     private final AuditLogService auditLogService;
     static final String IS_REQUIRED_SUFFIX = " is required.";
 
     @Override
-    public UsersReturnModel searchUsers() {
-        return null;
+    public Page<UsersReturnModel> searchUsers(MainSearchRequest searchRequest, PageRequest pageRequest) {
+        Page<UsersModel> users = usersJDBCRepository.searchUsers(searchRequest, pageRequest);
+        return users.map(UsersReturnModel::new);
     }
 
     @Override
@@ -90,9 +96,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             }
         }
 
-        if (modelObj.getEmailAddress()==null) {
-            errorList.add("Email Address" + IS_REQUIRED_SUFFIX);
-        }else{
+        if (modelObj.getEmailAddress()!=null) {
             modelObj.setEmailAddress(modelObj.getEmailAddress().trim());
         }
 
@@ -203,9 +207,20 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
         SmsModel sms = new SmsModel();
         sms.setRecipient(modelObj.getFormattedMobileNo());
-        sms.setMessage("Hi " + modelObj.getFirstNm()  + "! User ID: " + defaultCd + ", Password: " + defaultPass);
+        sms.setMessage("Hi, " + modelObj.getFirstNm()  + "! User ID: " + defaultCd + ", Password: " + defaultPass);
+        //smsService.sendSms(sms);
 
-        //smsService.sendSms(modelObj.getFormattedMobileNo());
+        //saving notif logs
+        NotifLogsModel notifLogsModel = new NotifLogsModel();
+        notifLogsModel.setRefNo(generateReferenceNumber(null));
+        notifLogsModel.setUserId(modelObj.getId());
+        notifLogsModel.setMessage(sms.getMessage());
+        notifLogsModel.setRecipient(modelObj.getMobileNo());
+        notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
+        notifLogsModel.setSentDt(new Date());
+        notifLogsModel.setType(SmsTypeEnum.NEW_USER_SMS.getKey());
+        notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+        notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
     }
 
 }

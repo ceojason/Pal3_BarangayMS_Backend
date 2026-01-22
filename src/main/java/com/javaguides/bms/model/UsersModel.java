@@ -14,8 +14,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -78,6 +81,11 @@ public class UsersModel extends BaseModel {
     @Column(name = "DATE_ENROLLED")
     private Date dateEnrolled;
 
+    @Transient
+    private String userId;
+
+    @Transient
+    private String cd;
 
     @Transient
     private String formattedMobileNo;
@@ -121,8 +129,17 @@ public class UsersModel extends BaseModel {
 
     public String getClassificationKeyStringForDisplay() {
         StringBuilder sb = new StringBuilder();
+        List<Integer> tempKeys = new ArrayList<>();
+
         if (residentClassKeys!=null && !residentClassKeys.isEmpty()) {
-            for (Integer i : residentClassKeys) {
+            tempKeys = residentClassKeys;
+        }
+        else if (classificationKey!=null && !classificationKey.isEmpty()) {
+            tempKeys = getClassificationKeyList();
+        }
+
+        if (tempKeys!=null && !tempKeys.isEmpty()) {
+            for (Integer i : tempKeys) {
                 if (!sb.isEmpty()) sb.append(", ");
                 sb.append(ResidentClassificationEnum.getDescByKey(i));
             }
@@ -135,6 +152,26 @@ public class UsersModel extends BaseModel {
         fullNm.append(lastNm).append(", ").append(firstNm).append(", ")
                 .append(middleNm!=null ? middleNm : "").append(" ").append(suffix!=null ? suffix : "");
         return fullNm.toString();
+    }
+
+    public String getFullNm2() {
+        StringBuilder fullNm = new StringBuilder()
+                .append(firstNm!=null ? firstNm : "")
+                .append(" ")
+                .append(middleNm!=null ? middleNm + " " : "")
+                .append(lastNm)
+                .append(suffix!=null ? " " + suffix : "");
+        return fullNm.toString();
+    }
+
+    public List<Integer> getClassificationKeyList() {
+        List<Integer> keys = new ArrayList<>();
+        if (classificationKey!=null) {
+            keys = Arrays.stream(classificationKey.split("\\|"))
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList());
+        }
+        return keys;
     }
 
     public UsersModel(EnrollmentRequest request) {

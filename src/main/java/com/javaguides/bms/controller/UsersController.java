@@ -2,7 +2,7 @@ package com.javaguides.bms.controller;
 
 import com.javaguides.bms.helper.ApiResponseModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
-import com.javaguides.bms.model.requestmodel.searchrequest.UsersSearchRequest;
+import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.service.UsersService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
@@ -19,8 +19,8 @@ public class UsersController {
     private UsersService usersService;
 
     @PostMapping("/search")
-    public ApiResponseModel search(@RequestBody UsersSearchRequest searchRequest) {
-        return new ApiResponseModel(usersService.searchUsers());
+    public ApiResponseModel search(@RequestBody MainSearchRequest searchRequest) {
+        return new ApiResponseModel(usersService.searchUsers(searchRequest, searchRequest.getPageRequest()));
     }
 
     @PostMapping("/validateEnrollment")

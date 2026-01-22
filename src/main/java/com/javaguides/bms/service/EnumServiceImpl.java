@@ -65,6 +65,13 @@ public class EnumServiceImpl implements EnumService {
     }
 
     @Override
+    public InitializeEnumModel getAllResidentTypeList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setAllResidentTypeList(ResidentClassificationEnum.getAllResidentClassList());
+        return enumModel;
+    }
+
+    @Override
     public InitializeEnumModel getYearlevelList() {
         InitializeEnumModel enumModel = new InitializeEnumModel();
         enumModel.setYearlevelList(YearlevelEnum.getYearlevelList());
@@ -78,4 +85,24 @@ public class EnumServiceImpl implements EnumService {
         return enumModel;
     }
 
+    @Override
+    public InitializeEnumModel getSmsTypeList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setSmsTypeList(SmsTypeEnum.getTypeList());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getAlertStatusList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setAlertStatusList(AlertStatusEnum.getTypeList());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getChannelList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setChannelList(ChannelEnum.getChannelList());
+        return enumModel;
+    }
 }

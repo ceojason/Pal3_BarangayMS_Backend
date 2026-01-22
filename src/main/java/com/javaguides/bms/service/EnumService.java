@@ -19,7 +19,15 @@ public interface EnumService {
 
     InitializeEnumModel getResidentTypeList();
 
+    InitializeEnumModel getAllResidentTypeList();
+
     InitializeEnumModel getYearlevelList();
 
     InitializeEnumModel getEnrolleeTypeList();
+
+    InitializeEnumModel getSmsTypeList();
+
+    InitializeEnumModel getAlertStatusList();
+
+    InitializeEnumModel getChannelList();
 }

@@ -161,11 +161,12 @@ public class BaseJDBCRepositoryImpl implements BaseJDBCRepository {
             try {
                 return clazz.getDeclaredField(fieldName);
             } catch (NoSuchFieldException e) {
-                clazz = clazz.getSuperclass(); // Move to superclass
+                clazz = clazz.getSuperclass(); // move to BaseModel
             }
         }
         return null;
     }
+
 
     @Override
     public <T> Optional<T> findById(String id, String tableName, Class<T> clazz) {

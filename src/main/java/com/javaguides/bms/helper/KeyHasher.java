@@ -29,7 +29,8 @@ public class KeyHasher {
         return salt;
     }
 
-    static final String CHAR_POOL = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$%!"; // No O, 0, I, 1
+    static final String CHAR_POOL = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    static final String CHAR_POOL_CD = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
     static final int DEFAULT_LENGTH = 8;
 
     private static String generateRandomPassword(int length) {
@@ -42,12 +43,22 @@ public class KeyHasher {
         return password.toString();
     }
 
+    private static String generateRandomCd(int length) {
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(CHAR_POOL_CD.length());
+            password.append(CHAR_POOL_CD.charAt(index));
+        }
+        return password.toString();
+    }
+
     public static String generateDefaultPassword() {
         return generateRandomPassword(DEFAULT_LENGTH);
     }
 
     public static String generateDefaultCd() {
-        return generateRandomPassword(5);
+        return generateRandomCd(5);
     }
 
 }

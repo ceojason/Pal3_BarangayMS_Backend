@@ -1,5 +1,6 @@
 package com.javaguides.bms.model;
 
+import com.javaguides.bms.customannotations.TableAlias;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.LoginCredsRequest;
 import jakarta.persistence.*;
@@ -15,6 +16,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="tbl_login_creds")
+@TableAlias("tlc")
 public class LoginCreds extends BaseModel {
 
     @Column(name = "USER_ID")

@@ -62,6 +62,9 @@ public class DbTableUtil {
                 if (field.getName().equalsIgnoreCase("id")) {
                     fields.add(field); // Only add 'id'
                 }
+                if (field.getName().equalsIgnoreCase("status")) {
+                    fields.add(field); // Only add 'id'
+                }
             }
         }
 

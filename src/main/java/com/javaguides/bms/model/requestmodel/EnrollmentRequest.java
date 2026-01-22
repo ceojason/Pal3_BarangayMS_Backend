@@ -49,4 +49,12 @@ public class EnrollmentRequest {
     private Integer isRegisteredVoter;
     private List<Integer> residentClassKeys;
     private String formattedMobileNo;
+
+    private String header;
+    private Integer type;
+    private Integer isSmsEmail;
+    private Integer alertStatus;
+    private String message;
+    private List<Integer> recipientKeys;
+
 }

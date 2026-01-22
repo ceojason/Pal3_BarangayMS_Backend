@@ -23,4 +23,8 @@ public class InitializeEnumModel {
     List<KeyValueModel> purokList;
     List<KeyValueModel> yesNoList;
     List<KeyValueModel> residentTypeList;
+    List<KeyValueModel> allResidentTypeList;
+    List<KeyValueModel> alertStatusList;
+    List<KeyValueModel> smsTypeList;
+    List<KeyValueModel> channelList;
 }

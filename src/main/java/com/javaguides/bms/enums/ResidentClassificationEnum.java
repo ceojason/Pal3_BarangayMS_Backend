@@ -21,7 +21,8 @@ public enum ResidentClassificationEnum {
     INDIGENT(8, "Indigent/Low Income"),
     FOUR_PS(9, "4PS Beneficiary"),
     OFW(10, "Overseas Filipino Worker (OFW)"),
-    OFFICIAL(11, "Barangay Official")
+    OFFICIAL(11, "Barangay Official"),
+    ALL(12, "All Resident Type")
     ;
 
     private final Integer key;
@@ -33,6 +34,17 @@ public enum ResidentClassificationEnum {
     }
 
     public static List<KeyValueModel> getResidentClassList() {
+        List<KeyValueModel> list = new ArrayList<>();
+        for (ResidentClassificationEnum val : values()) {
+            if (!val.getKey().equals(ALL.getKey())) {
+                list.add(new KeyValueModel(val.getKey(), val.getDesc()));
+            }
+        }
+        list.sort(Comparator.comparing(KeyValueModel::getKey));
+        return list;
+    }
+
+    public static List<KeyValueModel> getAllResidentClassList() {
         List<KeyValueModel> list = new ArrayList<>();
         for (ResidentClassificationEnum val : values()) {
             list.add(new KeyValueModel(val.getKey(), val.getDesc()));
@@ -48,5 +60,15 @@ public enum ResidentClassificationEnum {
             }
         }
         return "";
+    }
+
+    public static List<Integer> getAllKeys() {
+        List<Integer> keys = new ArrayList<>();
+        for (ResidentClassificationEnum val : values()) {
+            if (!val.getKey().equals(ALL.getKey())) {
+                keys.add(val.getKey());
+            }
+        }
+        return keys;
     }
 }
