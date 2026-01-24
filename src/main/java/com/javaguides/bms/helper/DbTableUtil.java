@@ -65,6 +65,9 @@ public class DbTableUtil {
                 if (field.getName().equalsIgnoreCase("status")) {
                     fields.add(field); // Only add 'id'
                 }
+                if (field.getName().equalsIgnoreCase("refNo")) {
+                    fields.add(field); // Only add 'id'
+                }
             }
         }
 
@@ -83,6 +86,52 @@ public class DbTableUtil {
             }
 
             columns.add(alias + "." + columnName + " AS " + alias + "_" + field.getName());
+        }
+
+        select.append(String.join(", ", columns));
+        return select.toString();
+    }
+
+    public static String buildSelectClause2(Class<?> modelClass) {
+        StringBuilder select = new StringBuilder();
+        String alias = getTableAlias(modelClass);
+
+        List<Field> fields = new ArrayList<>();
+
+        // Add declared fields from model class
+        fields.addAll(Arrays.asList(modelClass.getDeclaredFields()));
+
+        // Handle only specific fields from superclass
+        Class<?> superClass = modelClass.getSuperclass();
+        if (superClass != null && superClass != Object.class) {
+            for (Field field : superClass.getDeclaredFields()) {
+                String name = field.getName().toLowerCase();
+                if (name.equals("id") || name.equals("status") || name.equals("refno")) {
+                    fields.add(field);
+                }
+            }
+        }
+
+        List<String> columns = new ArrayList<>();
+
+        for (Field field : fields) {
+            if (Modifier.isStatic(field.getModifiers())) continue; // skip static fields
+            if (field.getAnnotation(Transient.class) != null) continue; // skip transient fields
+
+            String columnName;
+            Column columnAnnotation = field.getAnnotation(Column.class);
+            if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
+                columnName = columnAnnotation.name();
+            } else {
+                columnName = toSnakeCase(field.getName()); // fallback to snake_case
+            }
+
+            // FIX: map directly to POJO field name, no alias prefix in AS
+            if (alias != null && !alias.isBlank()) {
+                columns.add(alias + "." + columnName + " AS " + field.getName());
+            } else {
+                columns.add(columnName + " AS " + field.getName());
+            }
         }
 
         select.append(String.join(", ", columns));

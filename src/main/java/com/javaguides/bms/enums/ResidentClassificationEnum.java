@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 public enum ResidentClassificationEnum {
 
-    REGULAR(0, "Regular"),
+    //REGULAR(0, "Regular"),
     SENIOR_CITIZEN(1, "Senior Citizen"),
     STUDENT(2, "Student"),
     YOUTH(3, "Youth/Minor"),

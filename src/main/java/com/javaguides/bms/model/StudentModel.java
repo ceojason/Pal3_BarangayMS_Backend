@@ -20,6 +20,9 @@ import java.util.List;
 @TableAlias("tst")
 public class StudentModel extends BaseModel {
 
+    @Column(name = "REF_NO")
+    private String refNo;
+
     @Column(name = "LRN")
     private String lrn;
 

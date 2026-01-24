@@ -22,7 +22,8 @@ public enum DateFormatEnum {
     DT_FORMAT_14("DTFORMAT14", "hh:mm a", "08:30 PM"),
     DT_FORMAT_15("DTFORMAT15", "HH:mm", "20:30"),
     DT_FORMAT_16("DTFORMAT16", "hh:mm:ss a", "08:30:45 PM"),
-    DT_FORMAT_17("DTFORMAT17", "HH:mm:ss", "20:30:45")
+    DT_FORMAT_17("DTFORMAT17", "HH:mm:ss", "20:30:45"),
+    DT_FORMAT_18("DTFORMAT18", "dd-MM-yyyy", "01-12-1999")
     ;
 
     private final String key;

@@ -31,7 +31,6 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
     @Override
     public LoginCredsReturn login(LoginCredsRequest loginRequest, HttpSession session) throws Exception {
         LoginCreds loginCredsObj = validateLoginRequestFromForm(loginRequest, session);
-        session.setAttribute("user", loginCredsObj);
         return new LoginCredsReturn(loginCredsObj);
     }
 
@@ -58,8 +57,8 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
         } else {
             LoginCreds loginCreds = lcList.get(0);
             String passwordFromDb = loginCreds.getPassword();
-            //byte[] salt = loginCreds.getSalt();
-            String hashPassword = KeyHasher.hashPasswordWithoutSalt(obj.getPassword());
+            byte[] salt = loginCreds.getSalt();
+            String hashPassword = KeyHasher.hashPassword(obj.getPassword(), salt);
             if (!passwordFromDb.equals(hashPassword)) {
                 obj.getErrorList().add("The password is incorrect. Please try again.");
             } else {
@@ -76,10 +75,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 
 
     private void getSessionByRoleKey(LoginCreds lcObj, HttpSession session) {
-        if (lcObj.getRole() != null && lcObj.getRole().equals(SystemUserEnum.SYSTEM_ADMIN.getKey())) {
-            Optional<SystemAdminModel> modelObj = systemAdminJDBCRepository.findById(lcObj.getUserId());
-            modelObj.ifPresent(admin -> session.setAttribute("admin", admin));
-        }
+        session.setAttribute("user", lcObj);
     }
 
 }

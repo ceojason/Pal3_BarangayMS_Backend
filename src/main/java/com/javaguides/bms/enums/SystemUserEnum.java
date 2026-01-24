@@ -12,7 +12,7 @@ public enum SystemUserEnum {
     STUDENT(0, "Student", "Students"),
     FACULTY(1, "Faculty", "Teachers"),
     SYSTEM_ADMIN(2, "System Administrator", "System Administrator"),
-    SYSTEM_USER(3, "System User", "System Users")
+    SYSTEM_USER(3, "Resident", "Residents")
     ;
 
     private final Integer key;

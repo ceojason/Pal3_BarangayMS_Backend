@@ -7,6 +7,8 @@ import java.util.List;
 public interface LoginJDBCRepository {
     List<LoginCreds> getUserByCd(String userCd);
 
+    List<LoginCreds> getUserById(String id);
+
     int saveLoginCreds(LoginCreds loginCreds);
 
     int deleteByUserCd(String userCd);

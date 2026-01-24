@@ -6,10 +6,7 @@ import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.service.UsersService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -31,5 +28,10 @@ public class UsersController {
     @PostMapping("/saveEnrollment")
     public ApiResponseModel saveEnrollment(@RequestBody EnrollmentRequest requestObj, HttpSession session) {
         return new ApiResponseModel(usersService.saveEnrollment(requestObj, session));
+    }
+
+    @GetMapping("/{userId}")
+    public ApiResponseModel findById(@PathVariable String userId) {
+        return new ApiResponseModel(usersService.findByUserId(userId));
     }
 }

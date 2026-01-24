@@ -70,14 +70,14 @@ public class NotifLogsJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
         StringBuilder where = new StringBuilder();
         List<String> conditions = new ArrayList<>();
 
-        if (request.getRecipient() != null && !request.getRecipient().isEmpty()) {
-            map.addValue("recipient", request.getRecipient().trim());
-            conditions.add("RECIPIENT = :recipient");
+        if (request.getRecipient()!=null && !request.getRecipient().isEmpty()) {
+            map.addValue("recipient", "%" + request.getRecipient().trim().toUpperCase() + "%");
+            conditions.add(tblNotifLogsAlias + ".RECIPIENT LIKE :recipient");
         }
 
-        if (request.getRefNo() != null && !request.getRefNo().isEmpty()) {
+        if (request.getRefNo()!=null && !request.getRefNo().isEmpty()) {
             map.addValue("refNo", request.getRefNo().trim());
-            conditions.add("REF_NO = :refNo");
+            conditions.add(tblNotifLogsAlias + ".REF_NO = :refNo");
         }
 
         if (!conditions.isEmpty()) {

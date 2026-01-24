@@ -55,6 +55,9 @@ public class UsersReturnModel {
     private String createdBy;
     private String txnString;
 
+    private Date lastLoginDt;
+    private String lastLoginDtString;
+
     public UsersReturnModel(UsersModel modelObj) {
         this.id = modelObj.getId();
         this.cd = modelObj.getCd();
@@ -90,6 +93,7 @@ public class UsersReturnModel {
         this.religion = modelObj.getReligion();
         this.isRegisteredVoter = modelObj.getIsRegisteredVoter();
         this.isRegisteredVoterString = YesOrNoEnum.getDescByKey(isRegisteredVoter);
+        this.refNo = modelObj.getRefNo();
     }
 
 }

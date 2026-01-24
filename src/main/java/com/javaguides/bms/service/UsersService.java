@@ -13,4 +13,6 @@ public interface UsersService {
     UsersReturnModel validateEnrollment(EnrollmentRequest requestObj);
 
     UsersReturnModel saveEnrollment(EnrollmentRequest requestObj, HttpSession session);
+
+    UsersReturnModel findByUserId(String userId);
 }

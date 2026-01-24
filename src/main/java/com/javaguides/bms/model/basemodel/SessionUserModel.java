@@ -41,7 +41,7 @@ public class SessionUserModel {
 
     public String getUserFullNm() {
         StringBuilder fullNm = new StringBuilder();
-        fullNm.append(firstNm).append(" ").append(middleNm!=null ? middleNm : "").append(lastNm);
+        fullNm.append(firstNm).append(" ").append(middleNm!=null ? middleNm + " " : "").append(lastNm);
         return fullNm.toString();
     }
 

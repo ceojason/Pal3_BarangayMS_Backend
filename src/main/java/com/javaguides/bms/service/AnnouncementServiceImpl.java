@@ -1,24 +1,23 @@
 package com.javaguides.bms.service;
 
-import com.javaguides.bms.enums.AlertStatusEnum;
-import com.javaguides.bms.enums.ResidentClassificationEnum;
-import com.javaguides.bms.enums.SmsTypeEnum;
-import com.javaguides.bms.enums.YesOrNoEnum;
+import com.javaguides.bms.enums.*;
 import com.javaguides.bms.helper.StringMessagesUtil;
 import com.javaguides.bms.jdbc.repository.AnnouncementJDBCRepository;
+import com.javaguides.bms.jdbc.repository.NotifLogsJDBCRepository;
 import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
 import com.javaguides.bms.model.AnnouncementModel;
+import com.javaguides.bms.model.NotifLogsModel;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
+import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.AnnouncementReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +28,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
     static final String ARE_REQUIRED_SUFFIX = " are required.";
 
     private final AnnouncementJDBCRepository announcementJDBCRepository;
+    private final NotifLogsJDBCRepository notifLogsJDBCRepository;
 
     private UsersJDBCRepository usersJDBCRepository;
 
@@ -93,7 +93,8 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
     public void createListOfAnnouncementObjPerRecipient(AnnouncementModel modelObj) {
         List<UsersModel> users = usersJDBCRepository.findAllUsersByClassificationKeys(modelObj.getRecipientKeys());
         if (users == null || users.isEmpty()) {
-//            modelObj.setAnnouncementModels(Collections.emptyList());
+            modelObj.setAnnouncementModels(Collections.emptyList());
+            throwErrorMessage("No recipient found.");
             return;
         }
 
@@ -103,10 +104,13 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         modelObj.setRecipientListString(recipientNames);
 
         Date createdDt = new Date();
+        String generatedGrpId = UUID.randomUUID().toString().replace("-", "");
         List<AnnouncementModel> models = users.stream()
                 .map(u -> {
                     AnnouncementModel m = new AnnouncementModel();
                     m.setUserId(u.getId());
+                    m.setRefNo(generateReferenceNumber(ServicesEnum.ADD_ANNOUNCEMENT.getCode()));
+                    m.setGrpId(generatedGrpId);
                     m.setRecipientNm(u.getFullNm());
                     m.setHeader(modelObj.getHeader());
                     m.setIsSmsEmail(modelObj.getIsSmsEmail());
@@ -118,7 +122,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 })
                 .collect(Collectors.toList());
 
-//        modelObj.setAnnouncementModels(models);
+        modelObj.setAnnouncementModels(models);
     }
 
     @Override
@@ -129,7 +133,20 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         AnnouncementReturnModel returnModel = new AnnouncementReturnModel(model);
 
         if (returnModel.getAnnouncementModels()!=null && !returnModel.getAnnouncementModels().isEmpty()) {
-            returnModel.getAnnouncementModels().forEach(announcementJDBCRepository::saveRequest);
+            returnModel.getAnnouncementModels().forEach(modelObj -> {
+                announcementJDBCRepository.saveRequest(modelObj);
+
+                NotifLogsModel notifLogsModel = new NotifLogsModel();
+                notifLogsModel.setRefNo(generateReferenceNumber(null));
+                notifLogsModel.setUserId(modelObj.getId());
+                notifLogsModel.setMessage(modelObj.getMessage());
+                notifLogsModel.setRecipient(modelObj.getRecipientNm());
+                notifLogsModel.setIsSmsEmail(modelObj.getIsSmsEmail());
+                notifLogsModel.setSentDt(new Date());
+                notifLogsModel.setType(modelObj.getType());
+                notifLogsModel.setStatus(modelObj.getStatus());
+                notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+            });
         }
 
         assert returnModel.getAnnouncementModels()!=null;
@@ -138,8 +155,13 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 isSingle ? StringMessagesUtil.SENT_SINGLE_SUFFIX : StringMessagesUtil.SENT_MULTIPLE_SUFFIX,
                 isSingle ? StringMessagesUtil.ANNOUNCEMENT : StringMessagesUtil.ANNOUNCEMENTS
         ));
-        returnModel.setRefNo(generateReferenceNumber(null));
         return returnModel;
+    }
+
+    @Override
+    public Page<AnnouncementReturnModel> searchAnnouncement(MainSearchRequest searchRequest, PageRequest pageRequest) {
+        Page<AnnouncementModel> notifLogs = announcementJDBCRepository.searchAnnouncement(searchRequest, pageRequest);
+        return notifLogs.map(AnnouncementReturnModel::new);
     }
 
 }

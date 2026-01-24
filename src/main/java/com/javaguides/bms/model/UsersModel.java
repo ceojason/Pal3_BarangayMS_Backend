@@ -27,6 +27,9 @@ import java.util.stream.Collectors;
 @TableAlias("tu")
 public class UsersModel extends BaseModel {
 
+    @Column(name = "REF_NO")
+    private String refNo;
+
     @Column(name = "FIRST_NM")
     private String firstNm;
 
@@ -48,7 +51,7 @@ public class UsersModel extends BaseModel {
     @Column(name = "GENDER")
     private String gender;
 
-    @Column(name = "CIVIL_STATUS")
+    @Column(name = "CIVIL_STATUS_KEY")
     private Integer civilStatusKey;
 
     @Column(name = "MOBILE_NO")
@@ -57,7 +60,7 @@ public class UsersModel extends BaseModel {
     @Column(name = "EMAIL_ADDRESS")
     private String emailAddress;
 
-    @Column(name = "PUROK_KEY")
+    @Column(name = "PHASE_KEY")
     private Integer phaseKey;
 
     @Column(name = "HOME_ADDRESS")

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UsersJDBCRepository {
 
@@ -16,4 +17,6 @@ public interface UsersJDBCRepository {
     Page<UsersModel> searchUsers(MainSearchRequest requestObj, PageRequest page);
 
     List<UsersModel> findAllUsersByClassificationKeys(List<Integer> keys);
+
+    Optional<UsersModel> findById(String id);
 }

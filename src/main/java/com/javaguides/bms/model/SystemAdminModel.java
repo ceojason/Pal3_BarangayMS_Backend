@@ -51,6 +51,9 @@ public class SystemAdminModel extends BaseModel {
     private Date dateEnrolled;
 
     @Transient
+    private Integer role;
+
+    @Transient
     private String genderDscp;
     @Transient
     private String bdayDscp;

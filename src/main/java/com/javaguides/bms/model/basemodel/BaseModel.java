@@ -26,7 +26,6 @@ public class BaseModel {
 //    @Column(name = "VERSION")
 //    private String version;
     private List<String> errorList;
-    public String refNo;
     public String ackMessage;
     public String createdBy;
     public String txnDscp;

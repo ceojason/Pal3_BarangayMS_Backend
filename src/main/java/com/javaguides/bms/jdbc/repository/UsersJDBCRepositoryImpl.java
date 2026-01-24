@@ -16,10 +16,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -145,7 +142,7 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
                 .map(String::valueOf)
                 .collect(Collectors.joining("|"));
 
-        String regex = "(^|\\\\|)(" + regexGroup + ")(\\\\||$)";
+        String regex = "(^|\\|)(" + regexGroup + ")(\\||$)";
 
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("keys", regex);
@@ -155,4 +152,8 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
         return namedParameterJdbcTemplate.query(sql, map, new BeanPropertyRowMapper<>(UsersModel.class));
     }
 
+    @Override
+    public Optional<UsersModel> findById(String id) {
+        return super.findById(id, tblUsers, UsersModel.class);
+    }
 }

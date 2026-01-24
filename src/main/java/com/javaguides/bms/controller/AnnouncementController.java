@@ -2,6 +2,7 @@ package com.javaguides.bms.controller;
 
 import com.javaguides.bms.helper.ApiResponseModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
+import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.service.AnnouncementService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
@@ -26,4 +27,10 @@ public class AnnouncementController {
     public ApiResponseModel saveRequest(@RequestBody EnrollmentRequest requestObj) {
         return new ApiResponseModel(announcementService.saveRequest(requestObj));
     }
+
+    @PostMapping("/search")
+    public ApiResponseModel search(@RequestBody MainSearchRequest searchRequest) {
+        return new ApiResponseModel(announcementService.searchAnnouncement(searchRequest, searchRequest.getPageRequest()));
+    }
+
 }

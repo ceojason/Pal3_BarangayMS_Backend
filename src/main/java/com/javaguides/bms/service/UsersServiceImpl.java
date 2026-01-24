@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -167,6 +168,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     public UsersReturnModel saveEnrollment(EnrollmentRequest requestObj, HttpSession session) {
         UsersModel modelObj = new UsersModel(requestObj);
         validateObj(modelObj);
+        modelObj.setRefNo(generateReferenceNumber(ServicesEnum.ADD_USERS.getCode()));
         UsersReturnModel returnObj = new UsersReturnModel(modelObj);
 
         boolean isSaved = usersJDBCRepository.saveEnrollment(modelObj)>0;
@@ -182,7 +184,6 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
                 StringMessagesUtil.SAVED_SINGLE_SUFFIX,
                 StringMessagesUtil.USER
                 ));
-        returnObj.setRefNo(generateReferenceNumber(null));
         Object user = session.getAttribute("user");
         if (user instanceof LoginCreds currentUser) {
             returnObj.setCreatedBy(currentUser.getCd());
@@ -215,12 +216,86 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         notifLogsModel.setRefNo(generateReferenceNumber(null));
         notifLogsModel.setUserId(modelObj.getId());
         notifLogsModel.setMessage(sms.getMessage());
-        notifLogsModel.setRecipient(modelObj.getMobileNo());
+        notifLogsModel.setRecipient(modelObj.getFullNm());
         notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
         notifLogsModel.setSentDt(new Date());
         notifLogsModel.setType(SmsTypeEnum.NEW_USER_SMS.getKey());
         notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
         notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+    }
+
+    @Override
+    public UsersReturnModel findByUserId(String userId) {
+        UsersReturnModel returnObj = new UsersReturnModel();
+        Optional<UsersModel> user = usersJDBCRepository.findById(userId);
+        List<LoginCreds> login = loginJDBCRepository.getUserById(userId);
+        if (user.isPresent()) {
+            UsersModel modelObj = user.get();
+
+            if (login!=null && !login.isEmpty()) {
+                if (login.size()==1) {
+                    returnObj.setLastLoginDt(login.get(0).getUpdatedDt());
+                    returnObj.setLastLoginDtString(DateUtil.getDateStringWithFormat(returnObj.getLastLoginDt(), DateFormatEnum.DT_FORMAT_7.getPattern()));
+                }
+            }
+
+            returnObj.setId(modelObj.getId());
+            returnObj.setCd(modelObj.getCd());
+            returnObj.setFirstNm(modelObj.getFirstNm());
+            returnObj.setMiddleNm(modelObj.getMiddleNm());
+            returnObj.setLastNm(modelObj.getLastNm());
+            returnObj.setFullNm(modelObj.getFullNm());
+            returnObj.setSuffix(modelObj.getSuffix());
+
+            returnObj.setBirthDt(modelObj.getBirthDt());
+            returnObj.setBirthDtString(
+                    DateUtil.getDateStringWithFormat(modelObj.getBirthDt(), DateFormatEnum.DT_FORMAT_1.getPattern())
+            );
+
+            returnObj.setBirthPlace(modelObj.getBirthPlace());
+            returnObj.setGender(modelObj.getGender());
+            returnObj.setGenderDscp(
+                    GenderEnum.getGenderDscpFromKeyStr(modelObj.getGender())
+            );
+
+            returnObj.setCivilStatusKey(modelObj.getCivilStatusKey());
+            returnObj.setCivilStatusString(
+                    CivilStatusEnum.getCivilStatusDescByKey(modelObj.getCivilStatusKey())
+            );
+
+            returnObj.setMobileNo(modelObj.getMobileNo());
+            returnObj.setFormattedMobileNo(modelObj.getFormattedMobileNo());
+            returnObj.setHomeAddress(modelObj.getHomeAddress());
+            returnObj.setEmailAddress(modelObj.getEmailAddress());
+            returnObj.setOccupation(modelObj.getOccupation());
+            returnObj.setReligion(modelObj.getReligion());
+
+            returnObj.setResidentClassKeys(modelObj.getClassificationKeyList());
+            returnObj.setClassificationTypeString(
+                    modelObj.getClassificationKeyStringForDisplay()
+            );
+
+            returnObj.setPhaseKey(modelObj.getPhaseKey());
+            returnObj.setPhaseString(
+                    PhaseEnum.getDesc2ByKey(modelObj.getPhaseKey())
+            );
+
+            returnObj.setDateEnrolled(modelObj.getDateEnrolled());
+            returnObj.setDateEnrolledString(modelObj.getDateEnrolledString());
+
+            returnObj.setStatus(modelObj.getStatus());
+            returnObj.setStatusString(
+                    SystemStatusEnum.getDscpByKey(modelObj.getStatus())
+            );
+
+            returnObj.setIsRegisteredVoter(modelObj.getIsRegisteredVoter());
+            returnObj.setIsRegisteredVoterString(
+                    YesOrNoEnum.getDescByKey(modelObj.getIsRegisteredVoter())
+            );
+
+            returnObj.setRefNo(modelObj.getRefNo());
+        }
+        return returnObj;
     }
 
 }

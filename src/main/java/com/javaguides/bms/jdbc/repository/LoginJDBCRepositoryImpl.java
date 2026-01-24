@@ -33,6 +33,17 @@ public class LoginJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements L
     }
 
     @Override
+    public List<LoginCreds> getUserById(String id) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("id", id);
+
+        StringBuilder sql = new StringBuilder()
+                .append(" SELECT * ").append(" FROM ").append(tblLogin)
+                .append(" WHERE ").append(" USER_ID = :id ");
+        return namedParameterJdbcTemplate.query(sql.toString(), map, new BeanPropertyRowMapper<>(LoginCreds.class));
+    }
+
+    @Override
     public int saveLoginCreds(LoginCreds loginCreds) {
         return save(loginCreds);
     }

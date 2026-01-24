@@ -17,6 +17,12 @@ public enum ServicesEnum {
     ADD_FACULTY("ADD_FACULTY", "Add Faculty", false, "/facultyAdd", "AFA"),
     SEARCH_FACULTY("SEARCH_FACULTY", "Search Faculty", false, "/facultySearch", "SFA"),
     SYSTEM_SETTINGS("SYSTEM_SETTINGS", "System Settings", false,  "/systemSettings", null),
+    //BMS SERVICE EXCLUSIVE
+    ADD_USERS("ADD_USERS", "Add Users", false,  "/usersAdd", "BMS-USER"),
+    UPDATE_USERS("UPDATE_USERS", "Update Users", false,  null, "BMS-USER"),
+    DELETE_USERS("DELETE_USERS", "Delete Users", false,  null, "BMS-USER"),
+    ADD_ANNOUNCEMENT("ADD_ANNOUNCEMENT", "Add Announcement", false,  "/announcementAdd", "BMS-ANT"),
+    RESEND_ANNOUNCEMENT("RESEND_ANNOUNCEMENT", "Resend Announcement", false,  null, "BMS-ANT"),
     ;
 
     private final String code;

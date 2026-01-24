@@ -1,6 +1,8 @@
 package com.javaguides.bms.model;
 
 import com.javaguides.bms.customannotations.TableAlias;
+import com.javaguides.bms.enums.AlertStatusEnum;
+import com.javaguides.bms.enums.SmsTypeEnum;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import jakarta.persistence.Column;
@@ -20,6 +22,12 @@ import java.util.List;
 @Table(name="tbl_announcement")
 @TableAlias("ta")
 public class AnnouncementModel extends BaseModel {
+
+    @Column(name = "REF_NO")
+    private String refNo;
+
+    @Column(name = "GRP_ID")
+    private String grpId;
 
     @Column(name = "HEADER")
     private String header;
@@ -62,6 +70,47 @@ public class AnnouncementModel extends BaseModel {
 
     @Transient
     private String channelString;
+
+    public String getAlertStatusString() {
+        return AlertStatusEnum.getDesc3ByKey(alertStatus);
+    }
+
+    public String getTypeString() {
+        return SmsTypeEnum.getDescByKey(type);
+    }
+
+    public String getMessageTypeString() {
+        return getTypeString() + " - " + getAlertStatusString();
+    }
+
+    @Transient
+    private String firstNm;
+
+    @Transient
+    private String middleNm;
+
+    @Transient
+    private String lastNm;
+
+    @Transient
+    private String suffix;
+
+    public String getFullNm2() {
+        StringBuilder fullNm = new StringBuilder()
+                .append(firstNm!=null ? firstNm : "")
+                .append(" ")
+                .append(middleNm!=null ? middleNm + " " : "")
+                .append(lastNm)
+                .append(suffix!=null ? " " + suffix : "");
+        return fullNm.toString();
+    }
+
+    public String getFullNm() {
+        StringBuilder fullNm = new StringBuilder();
+        fullNm.append(lastNm).append(", ").append(firstNm).append(", ")
+                .append(middleNm!=null ? middleNm : "").append(" ").append(suffix!=null ? suffix : "");
+        return fullNm.toString();
+    }
 
     @Transient
     private List<AnnouncementModel> announcementModels;
