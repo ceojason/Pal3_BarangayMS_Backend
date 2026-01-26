@@ -56,6 +56,10 @@ public class AdminEnrollmentServiceImpl extends BaseServiceImpl implements Admin
             modelObj.setLastNm(modelObj.getLastNm().trim().toUpperCase());
         }
 
+        if (modelObj.getSuffix()!=null) {
+            modelObj.setSuffix(modelObj.getSuffix().trim().toUpperCase());
+        }
+
         if (modelObj.getGender()==null) {
             errorList.add(StringMessagesUtil.formatMsgString(StringMessagesUtil.IS_REQUIRED_SUFFIX, StringMessagesUtil.GENDER));
         }else{
