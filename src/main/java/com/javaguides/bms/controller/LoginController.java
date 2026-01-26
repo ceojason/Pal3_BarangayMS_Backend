@@ -22,7 +22,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/auth/login")
 @AllArgsConstructor
-@CrossOrigin("*")
 public class LoginController {
 
     private final LoginService loginService;
