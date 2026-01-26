@@ -12,6 +12,8 @@ public interface UsersJDBCRepository {
 
     int saveEnrollment(UsersModel modelObj);
 
+    int updateUser(UsersModel modelObj);
+
     Integer getUsersCount();
 
     Page<UsersModel> searchUsers(MainSearchRequest requestObj, PageRequest page);
@@ -19,4 +21,6 @@ public interface UsersJDBCRepository {
     List<UsersModel> findAllUsersByClassificationKeys(List<Integer> keys);
 
     Optional<UsersModel> findById(String id);
+
+    int deleteById(String id);
 }

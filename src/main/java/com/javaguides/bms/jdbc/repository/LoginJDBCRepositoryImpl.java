@@ -44,6 +44,11 @@ public class LoginJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements L
     }
 
     @Override
+    public int update(LoginCreds model) {
+        return super.update(model);
+    }
+
+    @Override
     public int saveLoginCreds(LoginCreds loginCreds) {
         return save(loginCreds);
     }
@@ -54,6 +59,15 @@ public class LoginJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements L
         map.addValue("cd", userCd);
         StringBuilder sql = new StringBuilder()
                 .append(" DELETE FROM ").append(tblLogin).append(" WHERE ").append(" CD = :cd ");
+        return namedParameterJdbcTemplate.update(sql.toString(), map);
+    }
+
+    @Override
+    public int deleteByUserId(String userId) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("userId", userId);
+        StringBuilder sql = new StringBuilder()
+                .append(" DELETE FROM ").append(tblLogin).append(" WHERE ").append(" USER_ID = :userId ");
         return namedParameterJdbcTemplate.update(sql.toString(), map);
     }
 

@@ -1,5 +1,7 @@
 package com.javaguides.bms.model;
 
+import com.javaguides.bms.enums.DateFormatEnum;
+import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import jakarta.persistence.Column;
@@ -29,8 +31,11 @@ public class SystemAdminModel extends BaseModel {
     @Column(name = "LAST_NM")
     private String lastNm;
 
-    @Column(name = "BIRTHDAY")
-    private Date bday;
+    @Column(name = "SUFFIX")
+    private String suffix;
+
+    @Column(name = "BIRTH_DT")
+    private Date birthDt;
 
     @Column(name = "GENDER")
     private String gender;
@@ -50,11 +55,46 @@ public class SystemAdminModel extends BaseModel {
     @Column(name = "DATE_ENROLLED")
     private Date dateEnrolled;
 
+    @Column(name = "PHASE_KEY")
+    private Integer phaseKey;
+
     @Transient
     private Integer role;
 
     @Transient
+    private String cd;
+
+    public String getDateEnrolledString() {
+        return dateEnrolled!=null
+                ? DateUtil.getDateStringWithFormat(dateEnrolled, DateFormatEnum.DT_FORMAT_1.getPattern()) : "";
+    }
+
+    public String getFullNm() {
+        StringBuilder fullNm = new StringBuilder();
+        if (lastNm!=null) {
+            fullNm.append(lastNm);
+        }
+        if (firstNm!=null) {
+            fullNm.append(", ")
+                    .append(firstNm);
+        }
+        if (middleNm!=null) {
+            fullNm.append(", ")
+                    .append(middleNm);
+        }
+        if (suffix!=null) {
+            fullNm.append(" ")
+                    .append(suffix);
+        }
+        return fullNm.toString();
+    }
+
+    @Transient
+    private String formattedMobileNo;
+
+    @Transient
     private String genderDscp;
+
     @Transient
     private String bdayDscp;
 
@@ -78,7 +118,7 @@ public class SystemAdminModel extends BaseModel {
             setFirstNm(request.getFirstNm());
             setMiddleNm(request.getMiddleNm());
             setLastNm(request.getLastNm());
-            setBday(request.getBday());
+            setBirthDt(request.getBday());
             setGender(request.getGender());
             setHomeAddress(request.getHomeAddress());
             setMobileNo(request.getMobileNo());

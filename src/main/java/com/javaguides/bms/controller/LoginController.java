@@ -45,7 +45,7 @@ public class LoginController {
         Object userObj = session.getAttribute("user");
         if (userObj!=null) {
             LoginCreds user = (LoginCreds) userObj;
-            List<LoginCreds> list = loginJDBCRepository.getUserByCd(user.getCd());
+            List<LoginCreds> list = loginJDBCRepository.getUserById(user.getUserId());
             if (list==null || list.isEmpty()) {
                 return ResponseEntity.status(401).body("Unauthorized: No user in session");
             } else if (list.size()>1) {
@@ -60,7 +60,7 @@ public class LoginController {
                     if (adminObj.isPresent()) {
                         SessionUserModel sessionUser = new SessionUserModel();
                         sessionUser.setCd(loginCreds.getCd());
-                        sessionUser.setPassword(loginCreds.getPassword());
+                        //sessionUser.setPassword(loginCreds.getPassword());
                         sessionUser.setFirstNm(adminObj.get().getFirstNm());
                         sessionUser.setMiddleNm(adminObj.get().getMiddleNm());
                         sessionUser.setLastNm(adminObj.get().getLastNm());

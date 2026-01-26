@@ -57,4 +57,8 @@ public class EnrollmentRequest {
     private String message;
     private List<Integer> recipientKeys;
 
+    private String cd;
+    private String password;
+
+    private String refNo;
 }

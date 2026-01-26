@@ -192,4 +192,68 @@ public class BaseJDBCRepositoryImpl implements BaseJDBCRepository {
         }
     }
 
+    @Override
+    public int update(Object entity) {
+        Class<?> clazz = entity.getClass();
+        Table table = clazz.getAnnotation(Table.class);
+        if (table == null) throw new IllegalArgumentException("Class must be annotated with @Table");
+
+        String tableName = table.name();
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+        String idColumnName = null;
+        Object idValue = null;
+
+        // Collect column values using reflection
+        while (clazz != null) {
+            for (Field field : clazz.getDeclaredFields()) {
+                Column column = field.getAnnotation(Column.class);
+                if (column != null) {
+                    field.setAccessible(true);
+                    try {
+                        Object value = field.get(entity);
+                        String columnName = column.name();
+
+                        // Save ID separately for WHERE clause
+                        if (columnName.equalsIgnoreCase("id")) {
+                            idColumnName = columnName;
+                            idValue = value;
+                        } else {
+                            fields.put(columnName, value);
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException("Failed to access field: " + field.getName(), e);
+                    }
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+
+        if (idColumnName == null || idValue == null) {
+            throw new IllegalArgumentException("Entity must have a non-null ID for update");
+        }
+
+        return genericUpdate(tableName, fields, idColumnName, idValue);
+    }
+
+    private int genericUpdate(String tableName, Map<String, Object> fields, String idColumn, Object idValue) {
+        if (fields.isEmpty()) return 0;
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("UPDATE ").append(tableName).append(" SET ");
+
+        List<String> assignments = new ArrayList<>();
+        for (String column : fields.keySet()) {
+            assignments.add(column + " = :" + column);
+        }
+        sql.append(String.join(", ", assignments));
+        sql.append(" WHERE ").append(idColumn).append(" = :id");
+
+        // Combine fields and id into parameter map
+        Map<String, Object> paramMap = new LinkedHashMap<>(fields);
+        paramMap.put("id", idValue);
+
+        return namedParameterJdbcTemplate.update(sql.toString(), paramMap);
+    }
+
 }

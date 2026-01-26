@@ -39,6 +39,10 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
     }
 
     @Override
+    public int updateUser(UsersModel modelObj) { return update(modelObj); }
+
+
+    @Override
     public Integer getUsersCount() {
         String sql = "SELECT COUNT(ID) FROM " + tblUsers;
         return namedParameterJdbcTemplate.queryForObject(sql, new EmptySqlParameterSource(), Integer.class);
@@ -155,5 +159,15 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
     @Override
     public Optional<UsersModel> findById(String id) {
         return super.findById(id, tblUsers, UsersModel.class);
+    }
+
+    @Override
+    public int deleteById(String id) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("id", id);
+
+        StringBuilder sql = new StringBuilder()
+                .append(" DELETE FROM ").append(tblUsers).append(" WHERE ").append(" ID = :id ");
+        return namedParameterJdbcTemplate.update(sql.toString(), map);
     }
 }

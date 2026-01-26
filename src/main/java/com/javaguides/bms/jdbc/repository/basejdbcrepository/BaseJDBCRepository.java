@@ -17,4 +17,6 @@ public interface BaseJDBCRepository {
     Field getField(Class<?> clazz, String fieldName);
 
     <T> Optional<T> findById(String id, String tableName, Class<T> clazz);
+
+    int update(Object entity);
 }

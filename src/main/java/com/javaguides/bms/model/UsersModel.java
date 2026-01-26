@@ -100,6 +100,9 @@ public class UsersModel extends BaseModel {
     private String genderDscp;
 
     @Transient
+    private String password;
+
+    @Transient
     private String birthDtString;
 
     @Transient
@@ -152,8 +155,21 @@ public class UsersModel extends BaseModel {
 
     public String getFullNm() {
         StringBuilder fullNm = new StringBuilder();
-        fullNm.append(lastNm).append(", ").append(firstNm).append(", ")
-                .append(middleNm!=null ? middleNm : "").append(" ").append(suffix!=null ? suffix : "");
+        if (lastNm!=null) {
+            fullNm.append(lastNm);
+        }
+        if (firstNm!=null) {
+            fullNm.append(", ")
+                    .append(firstNm);
+        }
+        if (middleNm!=null) {
+            fullNm.append(", ")
+                    .append(middleNm);
+        }
+        if (suffix!=null) {
+            fullNm.append(" ")
+                    .append(suffix);
+        }
         return fullNm.toString();
     }
 
@@ -198,6 +214,9 @@ public class UsersModel extends BaseModel {
             setReligion(request.getReligion());
             setIsRegisteredVoter(request.getIsRegisteredVoter());
             setResidentClassKeys(request.getResidentClassKeys());
+            setCd(request.getCd());
+            setPassword(request.getPassword());
+            setRefNo(request.getRefNo());
         }
     }
 }

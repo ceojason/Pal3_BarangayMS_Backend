@@ -18,15 +18,21 @@ import com.javaguides.bms.service.baseservice.BaseServiceImpl;
 import com.javaguides.bms.service.baseservice.SmsService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
@@ -225,6 +231,80 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
+    public UsersReturnModel update(EnrollmentRequest requestObj, HttpSession session) {
+        UsersModel modelObj = new UsersModel(requestObj);
+        validateObj(modelObj);
+
+        usersJDBCRepository.updateUser(modelObj);
+        try {
+            checkCdAndPasswordThenSave(modelObj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        UsersReturnModel returnObj = new UsersReturnModel(modelObj);
+        returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
+                StringMessagesUtil.UPDATED_SINGLE_SUFFIX,
+                StringMessagesUtil.USER
+        ));
+        return returnObj;
+    }
+
+    public void checkCdAndPasswordThenSave(UsersModel modelObj) throws Exception {
+        String userId = modelObj.getId();
+        List<LoginCreds> login = loginJDBCRepository.getUserById(userId);
+
+        if (login==null || login.isEmpty()) {
+            throwErrorMessage("No user was found.");
+        }
+        else if (login.size()>1) {
+            throwErrorMessage("An error occurred fetching user's data.");
+        }
+        else {
+            LoginCreds user = login.get(0);
+            if (modelObj.getCd()!=null) {
+                user.setCd(modelObj.getCd());
+            }
+
+            if (modelObj.getPassword()!=null) {
+                user.setPassword(KeyHasher.hashPassword(modelObj.getPassword(), user.getSalt()));
+            }
+            user.setUpdatedDt(new Date());
+            loginJDBCRepository.update(user);
+        }
+    }
+
+    @Override
+    public UsersReturnModel deleteUser(String userId) {
+        UsersReturnModel returnObj = new UsersReturnModel();
+        List<String> errorList = new ArrayList<>();
+
+        if (userId!=null) {
+            Optional<UsersModel> user = usersJDBCRepository.findById(userId);
+            if (user.isEmpty()) {
+                errorList.add("User data was not found.");
+            }else{
+                returnObj.setFirstNm(user.get().getFirstNm());
+                returnObj.setMiddleNm(user.get().getMiddleNm());
+                returnObj.setLastNm(user.get().getLastNm());
+            }
+
+            List<LoginCreds> list = loginJDBCRepository.getUserById(userId);
+            if (list.size()!=1) {
+                errorList.add("An error occurred while processing the user's data.");
+            }
+        }
+
+        if (!errorList.isEmpty()) {
+            throwErrorMessages(errorList);
+        }else{
+            usersJDBCRepository.deleteById(userId);
+            loginJDBCRepository.deleteByUserId(userId);
+        }
+        return returnObj;
+    }
+
+    @Override
     public UsersReturnModel findByUserId(String userId) {
         UsersReturnModel returnObj = new UsersReturnModel();
         Optional<UsersModel> user = usersJDBCRepository.findById(userId);
@@ -296,6 +376,34 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             returnObj.setRefNo(modelObj.getRefNo());
         }
         return returnObj;
+    }
+
+    private static final String PROFILE_IMAGE_DIR = "uploads/profile-images/";
+
+    @Override
+    public void saveProfileImage(String userId, MultipartFile file) {
+        try {
+            if (!Objects.requireNonNull(file.getContentType()).startsWith("image/")) {
+                throwErrorMessage("Invalid file type.");
+            }
+
+            Files.createDirectories(Paths.get(PROFILE_IMAGE_DIR));
+            String filename = "user_" + userId + ".jpg";
+            Path filePath = Paths.get(PROFILE_IMAGE_DIR, filename);
+            Files.write(filePath, file.getBytes());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save profile image", e);
+        }
+    }
+
+    @Override
+    public Resource loadProfileImage(String userId) {
+        try {
+            Path filePath = Paths.get(PROFILE_IMAGE_DIR, "user_" + userId + ".jpg");
+            return new UrlResource(filePath.toUri());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Profile image not found.", e);
+        }
     }
 
 }
