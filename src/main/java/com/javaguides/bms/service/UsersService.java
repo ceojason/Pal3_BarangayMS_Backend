@@ -20,6 +20,8 @@ public interface UsersService {
 
     UsersReturnModel deleteUser(String userId);
 
+    UsersReturnModel reset(EnrollmentRequest requestObj, HttpSession session);
+
     UsersReturnModel findByUserId(String userId);
 
     void saveProfileImage(String userId, MultipartFile file);

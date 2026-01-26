@@ -305,6 +305,56 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
+    public UsersReturnModel reset(EnrollmentRequest requestObj, HttpSession session) {
+        UsersModel modelObj = new UsersModel(requestObj);
+        List<LoginCreds> login = loginJDBCRepository.getUserById(requestObj.getId());
+        if (login==null || login.isEmpty()) {
+            throwErrorMessage("No user was found.");
+        }
+        else if (login.size()>1) {
+            throwErrorMessage("An error occurred fetching user's data.");
+        }
+        else {
+            LoginCreds loginObj = login.get(0);
+            String defaultPass = KeyHasher.generateDefaultPassword();
+            String defaultCd = KeyHasher.generateDefaultCd().toUpperCase();
+
+            loginObj.setUserId(requestObj.getId());
+            try {
+                loginObj.setPassword(KeyHasher.hashPassword(defaultPass, loginObj.getSalt()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            loginObj.setCd(defaultCd);
+            loginJDBCRepository.update(loginObj);
+
+            SmsModel sms = new SmsModel();
+            sms.setRecipient(modelObj.getFormattedMobileNo());
+            sms.setMessage("Hi, " + modelObj.getFirstNm()  + "! Your account was successfully reset. User ID: " + defaultCd + ", Password: " + defaultPass);
+            //smsService.sendSms(sms);
+
+            //saving notif logs
+            NotifLogsModel notifLogsModel = new NotifLogsModel();
+            notifLogsModel.setRefNo(generateReferenceNumber(null));
+            notifLogsModel.setUserId(modelObj.getId());
+            notifLogsModel.setMessage(sms.getMessage());
+            notifLogsModel.setRecipient(modelObj.getFullNm());
+            notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
+            notifLogsModel.setSentDt(new Date());
+            notifLogsModel.setType(SmsTypeEnum.RESET_USER.getKey());
+            notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+            notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+        }
+
+        UsersReturnModel returnObj = new UsersReturnModel();
+        returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
+                StringMessagesUtil.RESET_SINGLE_SUFFIX,
+                StringMessagesUtil.USER
+        ));
+        return returnObj;
+    }
+
+    @Override
     public UsersReturnModel findByUserId(String userId) {
         UsersReturnModel returnObj = new UsersReturnModel();
         Optional<UsersModel> user = usersJDBCRepository.findById(userId);

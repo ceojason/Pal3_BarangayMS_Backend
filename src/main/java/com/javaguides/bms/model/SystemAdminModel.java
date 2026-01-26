@@ -19,9 +19,6 @@ import java.util.Date;
 @Table(name="tbl_admin")
 public class SystemAdminModel extends BaseModel {
 
-    @Column(name = "USER_ID")
-    private String userId;
-
     @Column(name = "FIRST_NM")
     private String firstNm;
 
@@ -33,9 +30,6 @@ public class SystemAdminModel extends BaseModel {
 
     @Column(name = "SUFFIX")
     private String suffix;
-
-    @Column(name = "BIRTH_DT")
-    private Date birthDt;
 
     @Column(name = "GENDER")
     private String gender;
@@ -49,9 +43,6 @@ public class SystemAdminModel extends BaseModel {
     @Column(name = "EMAIL_ADDRESS")
     private String emailAddress;
 
-    @Column(name = "STATUS")
-    private Integer status;
-
     @Column(name = "DATE_ENROLLED")
     private Date dateEnrolled;
 
@@ -63,6 +54,9 @@ public class SystemAdminModel extends BaseModel {
 
     @Transient
     private String cd;
+
+    @Transient
+    private String password;
 
     public String getDateEnrolledString() {
         return dateEnrolled!=null
@@ -118,13 +112,17 @@ public class SystemAdminModel extends BaseModel {
             setFirstNm(request.getFirstNm());
             setMiddleNm(request.getMiddleNm());
             setLastNm(request.getLastNm());
-            setBirthDt(request.getBday());
             setGender(request.getGender());
             setHomeAddress(request.getHomeAddress());
             setMobileNo(request.getMobileNo());
             setEmailAddress(request.getEmailAddress());
             setStatus(request.getStatus());
             setDateEnrolled(request.getDateEnrolled());
+            setCd(request.getCd());
+            setPassword(request.getPassword());
+            setStatus(request.getStatus());
+            setSuffix(request.getSuffix());
+            setPhaseKey(request.getPhaseKey());
         }
     }
 

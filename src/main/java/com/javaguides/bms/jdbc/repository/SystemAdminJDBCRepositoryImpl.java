@@ -19,9 +19,11 @@ public class SystemAdminJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implem
     }
 
     @Override
+    public int updateAdmin(SystemAdminModel modelObj) { return update(modelObj); }
+
+    @Override
     public Optional<SystemAdminModel> findById(String id) {
         return super.findById(id, tblAdmin, SystemAdminModel.class);
     }
-
 
 }

@@ -41,6 +41,11 @@ public class UsersController {
         return new ApiResponseModel(usersService.update(requestObj, session));
     }
 
+    @PostMapping("/reset")
+    public ApiResponseModel reset(@RequestBody EnrollmentRequest requestObj, HttpSession session) {
+        return new ApiResponseModel(usersService.reset(requestObj, session));
+    }
+
     @DeleteMapping("/delete/{userId}")
     public ApiResponseModel delete(@PathVariable String userId) {
         return new ApiResponseModel(usersService.deleteUser(userId));

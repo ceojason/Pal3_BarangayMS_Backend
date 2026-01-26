@@ -2,6 +2,7 @@ package com.javaguides.bms.service;
 
 import com.javaguides.bms.enums.*;
 import com.javaguides.bms.helper.DateUtil;
+import com.javaguides.bms.helper.KeyHasher;
 import com.javaguides.bms.helper.StringMessagesUtil;
 import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
 import com.javaguides.bms.jdbc.repository.SystemAdminJDBCRepository;
@@ -20,10 +21,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -84,17 +82,6 @@ public class AdminEnrollmentServiceImpl extends BaseServiceImpl implements Admin
             modelObj.setEmailAddress(modelObj.getEmailAddress().trim());
         }
 
-        if (modelObj.getBirthDt()==null) {
-            errorList.add(StringMessagesUtil.formatMsgString(StringMessagesUtil.IS_REQUIRED_SUFFIX, StringMessagesUtil.BIRTHDAY));
-        }else{
-            boolean isValidDt = DateUtil.checkValidDateFrom(modelObj.getBirthDt(), 10);
-            if (isValidDt) {
-                modelObj.setBdayDscp(DateUtil.getDateStringWithFormat(modelObj.getBirthDt(), DateFormatEnum.DT_FORMAT_1.getPattern()));
-            }else{
-                errorList.add(StringMessagesUtil.formatMsgString(StringMessagesUtil.INVALID_OBJ, "Birth Date"));
-            }
-        }
-
         if (!errorList.isEmpty()) throwErrorMessages(errorList);
         return modelObj;
     }
@@ -121,11 +108,6 @@ public class AdminEnrollmentServiceImpl extends BaseServiceImpl implements Admin
             returnObj.setLastNm(modelObj.getLastNm());
             returnObj.setFullNm(modelObj.getFullNm());
             returnObj.setSuffix(modelObj.getSuffix());
-
-            returnObj.setBirthDt(modelObj.getBirthDt());
-            returnObj.setBirthDtString(
-                    DateUtil.getDateStringWithFormat(modelObj.getBirthDt(), DateFormatEnum.DT_FORMAT_1.getPattern())
-            );
 
             returnObj.setGender(modelObj.getGender());
             returnObj.setGenderDscp(
@@ -155,6 +137,49 @@ public class AdminEnrollmentServiceImpl extends BaseServiceImpl implements Admin
         return returnObj;
     }
 
+    @Override
+    public AdminReturnModel update(EnrollmentRequest request) {
+        SystemAdminModel modelObj = new SystemAdminModel(request);
+        validate(modelObj);
+
+        systemAdminJDBCRepository.updateAdmin(modelObj);
+        try {
+            checkCdAndPasswordThenSave(modelObj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        AdminReturnModel returnObj = new AdminReturnModel();
+        returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
+                StringMessagesUtil.UPDATED_SINGLE_SUFFIX,
+                StringMessagesUtil.USER
+        ));
+        return returnObj;
+    }
+
+    public void checkCdAndPasswordThenSave(SystemAdminModel modelObj) throws Exception {
+        String userId = modelObj.getId();
+        List<LoginCreds> login = loginJDBCRepository.getUserById(userId);
+
+        if (login==null || login.isEmpty()) {
+            throwErrorMessage("No user was found.");
+        }
+        else if (login.size()>1) {
+            throwErrorMessage("An error occurred fetching user's data.");
+        }
+        else {
+            LoginCreds user = login.get(0);
+            if (modelObj.getCd()!=null) {
+                user.setCd(modelObj.getCd());
+            }
+
+            if (modelObj.getPassword()!=null) {
+                user.setPassword(KeyHasher.hashPassword(modelObj.getPassword(), user.getSalt()));
+            }
+            user.setUpdatedDt(new Date());
+            loginJDBCRepository.update(user);
+        }
+    }
 
     private static final String PROFILE_IMAGE_DIR = "uploads/profile-images/";
 
@@ -183,7 +208,5 @@ public class AdminEnrollmentServiceImpl extends BaseServiceImpl implements Admin
             throw new RuntimeException("Profile image not found.", e);
         }
     }
-
-
 
 }

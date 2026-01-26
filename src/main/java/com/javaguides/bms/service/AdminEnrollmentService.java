@@ -11,6 +11,8 @@ public interface AdminEnrollmentService {
 
     AdminReturnModel findByUserId(String userId);
 
+    AdminReturnModel update(EnrollmentRequest request);
+
     void saveProfileImage(String userId, MultipartFile file);
 
     Resource loadProfileImage(String userId);

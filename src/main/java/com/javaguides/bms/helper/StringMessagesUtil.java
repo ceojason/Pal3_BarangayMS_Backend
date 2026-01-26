@@ -5,6 +5,7 @@ public final class StringMessagesUtil {
     private StringMessagesUtil() {}
 
     public static final String SAVED_SINGLE_SUFFIX = "{} was successfully saved.";
+    public static final String RESET_SINGLE_SUFFIX = "{} was successfully reset.";
     public static final String UPDATED_SINGLE_SUFFIX = "{} was successfully updated.";
     public static final String DELETED_SINGLE_SUFFIX = "{} was successfully deleted.";
 

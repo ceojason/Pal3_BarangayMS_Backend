@@ -30,8 +30,6 @@ public class AdminReturnModel {
     private String emailAddress;
     private Integer phaseKey;
     private String phaseString;
-    private Date birthDt;
-    private String birthDtString;
 
     private Date dateEnrolled;
     private String dateEnrolledString;
@@ -42,6 +40,7 @@ public class AdminReturnModel {
     private Date lastLoginDt;
     private String lastLoginDtString;
     private String refNo;
+    private String ackMessage;
 
     public AdminReturnModel(SystemAdminModel modelObj) {
         this.id = modelObj.getId();
@@ -51,8 +50,6 @@ public class AdminReturnModel {
         this.lastNm = modelObj.getLastNm();
         this.fullNm = modelObj.getFullNm();
         this.suffix = modelObj.getSuffix();
-        this.birthDt = modelObj.getBirthDt();
-        this.birthDtString = DateUtil.getDateStringWithFormat(birthDt, DateFormatEnum.DT_FORMAT_1.getPattern());
         this.mobileNo = modelObj.getMobileNo();
         this.formattedMobileNo = modelObj.getFormattedMobileNo();
         this.homeAddress = modelObj.getHomeAddress();

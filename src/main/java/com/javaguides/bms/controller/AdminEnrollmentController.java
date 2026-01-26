@@ -41,7 +41,7 @@ public class AdminEnrollmentController {
     }
 
     @PostMapping("/update")
-    public ApiResponseModel update(@RequestBody EnrollmentRequest requestObj, HttpSession session) {
-        return new ApiResponseModel(adminEnrollmentService.update(requestObj, session));
+    public ApiResponseModel update(@RequestBody EnrollmentRequest requestObj) {
+        return new ApiResponseModel(adminEnrollmentService.update(requestObj));
     }
 }
