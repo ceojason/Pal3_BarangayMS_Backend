@@ -64,6 +64,23 @@ public class AnnouncementJDBCRepositoryImpl extends BaseJDBCRepositoryImpl imple
     }
 
     @Override
+    public List<AnnouncementModel> findAnnouncementByUserIdGrouped(String userId) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("userId", userId);
+
+        StringBuilder query = new StringBuilder()
+                .append(" SELECT ").append(DbTableUtil.buildSelectClause2(AnnouncementModel.class))
+                .append(", DATE(").append(tblAlias).append(".CREATED_DT) AS CREATED_DATE ") // optional
+                .append(" FROM ").append(DbTableUtil.getTableNameWithAlias(AnnouncementModel.class))
+                .append(" WHERE ").append(tblAlias).append(".USER_ID = :userId ")
+                .append(" ORDER BY DATE(").append(tblAlias).append(".CREATED_DT) DESC, ")
+                .append(tblAlias).append(".CREATED_DT DESC");
+
+        return namedParameterJdbcTemplate.query(query.toString(), map, new BeanPropertyRowMapper<>(AnnouncementModel.class));
+    }
+
+
+    @Override
     public Page<AnnouncementModel> searchAnnouncement(MainSearchRequest requestObj, PageRequest page) {
         MapSqlParameterSource map = new MapSqlParameterSource();
         List<AnnouncementModel> list = new ArrayList<>();

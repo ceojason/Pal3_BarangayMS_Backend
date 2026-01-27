@@ -14,5 +14,7 @@ public interface AnnouncementJDBCRepository {
 
     List<AnnouncementModel> findAnnouncementByUserId(String userId);
 
+    List<AnnouncementModel> findAnnouncementByUserIdGrouped(String userId);
+
     Page<AnnouncementModel> searchAnnouncement(MainSearchRequest requestObj, PageRequest page);
 }

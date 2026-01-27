@@ -1,22 +1,28 @@
 package com.javaguides.bms.service;
 
 import com.javaguides.bms.enums.*;
+import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.helper.StringMessagesUtil;
 import com.javaguides.bms.jdbc.repository.AnnouncementJDBCRepository;
+import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
 import com.javaguides.bms.jdbc.repository.NotifLogsJDBCRepository;
 import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
 import com.javaguides.bms.model.AnnouncementModel;
+import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.NotifLogsModel;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.AnnouncementReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,6 +35,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
 
     private final AnnouncementJDBCRepository announcementJDBCRepository;
     private final NotifLogsJDBCRepository notifLogsJDBCRepository;
+    private final LoginJDBCRepository loginJDBCRepository;
 
     private UsersJDBCRepository usersJDBCRepository;
 
@@ -164,4 +171,26 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         return notifLogs.map(AnnouncementReturnModel::new);
     }
 
+    @Override
+    public Map<String, List<AnnouncementModel>> getAnnouncementListGrouped(Integer roleKey, HttpSession session) {
+        Map<String, List<AnnouncementModel>> grouped = new HashMap<>();
+        if (SystemUserEnum.SYSTEM_USER.getKey().equals(roleKey)) {
+            Object userObj = session.getAttribute("user");
+            if (userObj!=null) {
+                LoginCreds user = (LoginCreds) userObj;
+                List<LoginCreds> list = loginJDBCRepository.getUserByCd(user.getCd());
+                if (list==null || list.isEmpty()) {
+                    return null;
+                } else if (list.size()>1) {
+                    return null;
+                } else {
+                    LoginCreds loginCreds = list.get(0);
+                    List<AnnouncementModel> modelObj = announcementJDBCRepository.findAnnouncementByUserIdGrouped(loginCreds.getUserId());
+                    grouped = modelObj.stream().collect(Collectors.groupingBy(a ->
+                            DateUtil.getDateStringWithFormat(a.getCreatedDt(), DateFormatEnum.DT_FORMAT_5.getPattern()), LinkedHashMap::new, Collectors.toList()));
+                }
+            }
+        }
+        return grouped;
+    }
 }

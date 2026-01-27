@@ -74,8 +74,8 @@ public class LoginJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements L
     @Override
     public int updateLoginDt(String userId) {
         MapSqlParameterSource map = new MapSqlParameterSource();
-        map.addValue("dt", new Date());        // For updatedDt
-        map.addValue("userId", userId);        // Bind userId
+        map.addValue("dt", new Date());
+        map.addValue("userId", userId);
 
         StringBuilder sql = new StringBuilder()
                 .append("UPDATE ").append(tblLogin)

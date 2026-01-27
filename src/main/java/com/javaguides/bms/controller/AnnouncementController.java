@@ -6,10 +6,7 @@ import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.service.AnnouncementService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/announcement")
@@ -33,4 +30,8 @@ public class AnnouncementController {
         return new ApiResponseModel(announcementService.searchAnnouncement(searchRequest, searchRequest.getPageRequest()));
     }
 
+    @GetMapping("/getAnnouncementListGrouped/{roleKey}")
+    public ApiResponseModel getAnnouncementListGrouped(@PathVariable Integer roleKey, HttpSession session) {
+        return new ApiResponseModel(announcementService.getAnnouncementListGrouped(roleKey, session));
+    }
 }
