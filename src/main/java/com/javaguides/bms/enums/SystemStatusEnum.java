@@ -12,7 +12,9 @@ public enum SystemStatusEnum {
     LOGGED_IN(4, "Logged in", true),
     LOGGED_OUT(5, "Logged Out", true),
     SENT(6, "Sent successfully", true),
-    NOT_SENT(7, "Sent error", true)
+    NOT_SENT(7, "Sent error", true),
+    PENDING(8, "Pending", true),
+    PROCESSED(9, "Processed", true)
     ;
 
     private final Integer key;

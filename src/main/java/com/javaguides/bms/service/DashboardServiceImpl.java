@@ -2,6 +2,7 @@ package com.javaguides.bms.service;
 
 import com.javaguides.bms.enums.SystemUserEnum;
 import com.javaguides.bms.jdbc.repository.AnnouncementJDBCRepository;
+import com.javaguides.bms.jdbc.repository.DocumentJDBCRepository;
 import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
 import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
 import com.javaguides.bms.model.AnnouncementModel;
@@ -27,6 +28,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
     private UsersJDBCRepository usersJDBCRepository;
     private AnnouncementJDBCRepository announcementJDBCRepository;
     private LoginJDBCRepository loginJDBCRepository;
+    private DocumentJDBCRepository documentJDBCRepository;
 
     @Override
     public DashboardReturnModel getDashboardData(Integer roleKey, HttpSession session) {
@@ -43,7 +45,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
             modelObj.setParamCount2(String.valueOf(announcement));
             modelObj.setParamLabel2("No. of announcement sent today");
 
-            modelObj.setParamCount3(String.valueOf(0));
+            modelObj.setParamCount3(documentJDBCRepository.getCount().toString());
             modelObj.setParamLabel3("No. of pending requests");
         }
 

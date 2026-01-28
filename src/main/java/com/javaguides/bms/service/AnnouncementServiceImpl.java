@@ -138,11 +138,10 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         validate(model);
         createListOfAnnouncementObjPerRecipient(model);
         AnnouncementReturnModel returnModel = new AnnouncementReturnModel(model);
+        List<NotifLogsModel> notifList = new ArrayList<>();
 
         if (returnModel.getAnnouncementModels()!=null && !returnModel.getAnnouncementModels().isEmpty()) {
             returnModel.getAnnouncementModels().forEach(modelObj -> {
-                announcementJDBCRepository.saveRequest(modelObj);
-
                 NotifLogsModel notifLogsModel = new NotifLogsModel();
                 notifLogsModel.setRefNo(generateReferenceNumber(null));
                 notifLogsModel.setUserId(modelObj.getId());
@@ -152,9 +151,12 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 notifLogsModel.setSentDt(new Date());
                 notifLogsModel.setType(modelObj.getType());
                 notifLogsModel.setStatus(modelObj.getStatus());
-                notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+                notifList.add(notifLogsModel);
             });
         }
+
+        announcementJDBCRepository.saveBatch(returnModel.getAnnouncementModels());
+        notifLogsJDBCRepository.saveBatch(notifList);
 
         assert returnModel.getAnnouncementModels()!=null;
         boolean isSingle = returnModel.getAnnouncementModels().size() == 1;
@@ -178,7 +180,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
             Object userObj = session.getAttribute("user");
             if (userObj!=null) {
                 LoginCreds user = (LoginCreds) userObj;
-                List<LoginCreds> list = loginJDBCRepository.getUserByCd(user.getCd());
+                List<LoginCreds> list = loginJDBCRepository.getUserById(user.getUserId());
                 if (list==null || list.isEmpty()) {
                     return null;
                 } else if (list.size()>1) {

@@ -30,4 +30,6 @@ public interface EnumService {
     InitializeEnumModel getAlertStatusList();
 
     InitializeEnumModel getChannelList();
+
+    InitializeEnumModel getDocumentList();
 }

@@ -5,8 +5,12 @@ import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.List;
+
 public interface NotifLogsJDBCRepository {
     int saveNotifLogs(NotifLogsModel model);
+
+    int saveBatch(List<NotifLogsModel> list);
 
     Page<NotifLogsModel> searchNotifLogs(MainSearchRequest requestObj, PageRequest page);
 }

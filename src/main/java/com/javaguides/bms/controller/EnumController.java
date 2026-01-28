@@ -40,6 +40,11 @@ public class EnumController {
         return new ApiResponseModel(enumService.getChannelList());
     }
 
+    @GetMapping("/getDocumentList")
+    public ApiResponseModel getDocumentList() {
+        return new ApiResponseModel(enumService.getDocumentList());
+    }
+
     @GetMapping("/getServiceListForNav")
     public ApiResponseModel getServiceListForNav() {
         return new ApiResponseModel(enumService.getServiceListForNav());

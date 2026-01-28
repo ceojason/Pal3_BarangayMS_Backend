@@ -105,4 +105,11 @@ public class EnumServiceImpl implements EnumService {
         enumModel.setChannelList(ChannelEnum.getChannelList());
         return enumModel;
     }
+
+    @Override
+    public InitializeEnumModel getDocumentList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setDocumentTypeList(DocumentTypeEnum.getDocumentList());
+        return enumModel;
+    }
 }

@@ -256,4 +256,101 @@ public class BaseJDBCRepositoryImpl implements BaseJDBCRepository {
         return namedParameterJdbcTemplate.update(sql.toString(), paramMap);
     }
 
+    @Override
+    public int batchSave(List<?> entities) {
+        if (entities == null || entities.isEmpty()) return 0;
+
+        Class<?> clazz = entities.get(0).getClass();
+        Table table = clazz.getAnnotation(Table.class);
+        if (table == null) throw new IllegalArgumentException("Class must be annotated with @Table");
+
+        String tableName = table.name();
+
+        // Collect column names once
+        Map<String, Object> sampleFields = new LinkedHashMap<>();
+        collectFields(entities.get(0), sampleFields);
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO ").append(tableName).append(" (");
+
+        StringJoiner columns = new StringJoiner(", ");
+        StringJoiner values = new StringJoiner(", ");
+
+        for (String field : sampleFields.keySet()) {
+            columns.add(field);
+            values.add(":" + field);
+        }
+
+        sql.append(columns).append(") VALUES (").append(values).append(")");
+
+        // Build parameter list
+        List<Map<String, Object>> batchParams = new ArrayList<>();
+
+        for (Object entity : entities) {
+            Map<String, Object> fieldMap = new LinkedHashMap<>();
+            collectFields(entity, fieldMap);
+            batchParams.add(fieldMap);
+        }
+
+        // Convert to SqlParameterSource[]
+        MapSqlParameterSource[] batch = batchParams.stream()
+                .map(MapSqlParameterSource::new)
+                .toArray(MapSqlParameterSource[]::new);
+
+        int[] results = namedParameterJdbcTemplate.batchUpdate(sql.toString(), batch);
+
+        return Arrays.stream(results).sum();
+    }
+
+    private void collectFields(Object entity, Map<String, Object> fieldMap) {
+        Class<?> clazz = entity.getClass();
+
+        Map<String, Object> idFieldMap = new LinkedHashMap<>();
+        Map<String, Object> otherFieldMap = new LinkedHashMap<>();
+
+        while (clazz != null) {
+            for (Field field : clazz.getDeclaredFields()) {
+                Column column = field.getAnnotation(Column.class);
+                if (column != null) {
+                    field.setAccessible(true);
+                    try {
+                        String columnName = column.name();
+                        Object value = field.get(entity);
+
+                        // Auto-generate ID
+                        if ((field.getName().equalsIgnoreCase("id") || columnName.equalsIgnoreCase("id"))
+                                && (value == null || String.valueOf(value).isBlank())) {
+                            String uuid = UUID.randomUUID().toString().replace("-", "");
+                            value = uuid;
+                            field.set(entity, uuid);
+                        }
+
+                        if (columnName.equalsIgnoreCase("id")) {
+                            idFieldMap.put(columnName, value);
+                        } else {
+                            otherFieldMap.put(columnName, value);
+                        }
+
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException("Failed to access field: " + field.getName(), e);
+                    }
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+
+        fieldMap.putAll(idFieldMap);
+        fieldMap.putAll(otherFieldMap);
+    }
+
+    @Override
+    public int batchSaveChunked(List<?> entities, int batchSize) {
+        int total = 0;
+        for (int i = 0; i < entities.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, entities.size());
+            total += batchSave(entities.subList(i, end));
+        }
+        return total;
+    }
+
 }

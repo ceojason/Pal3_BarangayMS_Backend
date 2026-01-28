@@ -59,6 +59,18 @@
             <artifactId>twilio</artifactId>
             <version>10.4.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- pom.xml -->
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.boot</groupId>-->

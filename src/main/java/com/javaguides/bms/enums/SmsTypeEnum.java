@@ -12,7 +12,8 @@ public enum SmsTypeEnum {
     NEW_USER_SMS(0, "User Registration"),
     ANNOUNCEMENT_SMS(1, "Announcement"),
     ALARM_WARNING_SMS(2, "Alarm/Warning"),
-    RESET_USER(3, "Reset User")
+    RESET_USER(3, "Reset User"),
+    DOCUMENT_REQUEST(4, "Document Request")
     ;
     private final Integer key;
     private final String desc;
@@ -24,8 +25,9 @@ public enum SmsTypeEnum {
 
     public static List<KeyValueModel> getTypeList() {
         List<KeyValueModel> list = new ArrayList<>();
+        List<Integer> keysToRemove = List.of(NEW_USER_SMS.key, RESET_USER.key, DOCUMENT_REQUEST.key);
         for (SmsTypeEnum val : values()) {
-            list.add(new KeyValueModel(val.getKey(), val.getDesc()));
+            if (!keysToRemove.contains(val.getKey())) list.add(new KeyValueModel(val.getKey(), val.getDesc()));
         }
         return list;
     }

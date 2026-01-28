@@ -27,4 +27,5 @@ public class InitializeEnumModel {
     List<KeyValueModel> alertStatusList;
     List<KeyValueModel> smsTypeList;
     List<KeyValueModel> channelList;
+    List<KeyValueModel> documentTypeList;
 }

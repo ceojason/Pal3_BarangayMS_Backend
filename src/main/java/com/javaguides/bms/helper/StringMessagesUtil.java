@@ -22,6 +22,8 @@ public final class StringMessagesUtil {
     public static final String SENT_SINGLE_SUFFIX = "{} was successfully created and sent.";
     public static final String SENT_MULTIPLE_SUFFIX = "{} were successfully created and sent.";
 
+    public static final String SUBMITTED_SINGLE_SUFFIX = "{} was successfully submitted.";
+
 
     /////////////////////// object || variable names ///////////////////////
     public static final String FIRST_NM = "First Name";

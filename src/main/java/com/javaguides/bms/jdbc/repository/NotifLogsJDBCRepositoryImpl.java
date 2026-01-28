@@ -4,7 +4,6 @@ import com.javaguides.bms.helper.DbTableUtil;
 import com.javaguides.bms.helper.GenericRowMapper;
 import com.javaguides.bms.jdbc.repository.basejdbcrepository.BaseJDBCRepositoryImpl;
 import com.javaguides.bms.model.NotifLogsModel;
-import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -34,6 +33,11 @@ public class NotifLogsJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
     @Override
     public int saveNotifLogs(NotifLogsModel model) {
         return save(model);
+    }
+
+    @Override
+    public int saveBatch(List<NotifLogsModel> list) {
+        return batchSave(list);
     }
 
     @Override

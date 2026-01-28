@@ -3,6 +3,7 @@ package com.javaguides.bms.jdbc.repository.basejdbcrepository;
 import org.springframework.data.domain.PageRequest;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Optional;
 
 public interface BaseJDBCRepository {
@@ -19,4 +20,8 @@ public interface BaseJDBCRepository {
     <T> Optional<T> findById(String id, String tableName, Class<T> clazz);
 
     int update(Object entity);
+
+    int batchSave(List<?> entities);
+
+    int batchSaveChunked(List<?> entities, int batchSize);
 }

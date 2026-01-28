@@ -10,6 +10,8 @@ import java.util.List;
 public interface AnnouncementJDBCRepository {
     int saveRequest(AnnouncementModel modelObj);
 
+    int saveBatch(List<AnnouncementModel> list);
+
     Integer getCount();
 
     List<AnnouncementModel> findAnnouncementByUserId(String userId);

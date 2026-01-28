@@ -40,6 +40,11 @@ public class AnnouncementJDBCRepositoryImpl extends BaseJDBCRepositoryImpl imple
     }
 
     @Override
+    public int saveBatch(List<AnnouncementModel> list) {
+        return batchSave(list);
+    }
+
+    @Override
     public Integer getCount() {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("today", new java.sql.Date(System.currentTimeMillis()));
