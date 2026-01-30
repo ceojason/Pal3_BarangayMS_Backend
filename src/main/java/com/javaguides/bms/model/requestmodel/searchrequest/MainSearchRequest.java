@@ -16,4 +16,6 @@ public class MainSearchRequest extends SearchBaseModel {
     private String recipient;
     private String refNo;
 
+    private String requestor;
+    private Boolean isPending;
 }

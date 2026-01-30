@@ -18,6 +18,9 @@ public class DocumentRequest extends BaseModel {
     private Integer documentType;
     private String purpose;
     private Date dateRequested;
+    private String body;
+    private String header;
+    private String footer;
 
     private String refNo;
 

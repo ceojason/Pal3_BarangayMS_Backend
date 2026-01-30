@@ -28,6 +28,9 @@ public class DocumentReturnModel {
     private String dateRequestedString;
     private String ackMessage;
 
+    private String requestor;
+    private String fileNm;
+
     private String header;
     private String body;
     private String footer;
@@ -44,6 +47,9 @@ public class DocumentReturnModel {
         this.dateRequested = model.getDateRequested();
         this.dateRequestedString = DateUtil.getDateStringWithFormat(dateRequested, DateFormatEnum.DT_FORMAT_12.getPattern());
         this.ackMessage = model.getAckMessage();
+
+        this.requestor = model.getFullNm();
+        this.fileNm = model.fileNmString();
 
         this.header = model.getHeader();
         this.body = model.getBody();

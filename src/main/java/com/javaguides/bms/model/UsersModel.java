@@ -115,6 +115,9 @@ public class UsersModel extends BaseModel {
     private String householdString;
 
     @Transient
+    private String dateEnrolledString;
+
+    @Transient
     private String isRegisteredVoterString;
 
     public String getDateEnrolledString() {
@@ -202,6 +205,8 @@ public class UsersModel extends BaseModel {
             setSuffix(request.getSuffix());
             setBirthDt(request.getBirthDt());
             setBirthPlace(request.getBirthPlace());
+            setDateEnrolled(request.getDateEnrolled());
+            setDateEnrolledString(request.getDateEnrolledString());
             setGender(request.getGender());
             setCivilStatusKey(request.getCivilStatusKey());
             setMobileNo(request.getMobileNo());

@@ -14,7 +14,8 @@ public enum SystemStatusEnum {
     SENT(6, "Sent successfully", true),
     NOT_SENT(7, "Sent error", true),
     PENDING(8, "Pending", true),
-    PROCESSED(9, "Processed", true)
+    PROCESSED(9, "Processed", true),
+    REJECTED(10, "Rejected", true)
     ;
 
     private final Integer key;

@@ -16,7 +16,7 @@ public enum YesOrNoEnum {
 
     private final Integer key;
     private final String desc;
-    private final boolean booleanVal;
+    private final Boolean booleanVal;
 
     YesOrNoEnum(Integer key, String desc, Boolean booleanVal) {
         this.key = key;

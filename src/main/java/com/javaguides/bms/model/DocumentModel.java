@@ -1,6 +1,7 @@
 package com.javaguides.bms.model;
 
 import com.javaguides.bms.customannotations.TableAlias;
+import com.javaguides.bms.enums.DocumentTypeEnum;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.DocumentRequest;
 import jakarta.persistence.Column;
@@ -49,6 +50,45 @@ public class DocumentModel extends BaseModel {
     @Transient
     private String documentTypeString;
 
+    @Transient
+    private String firstNm;
+
+    @Transient
+    private String middleNm;
+
+    @Transient
+    private String lastNm;
+
+    @Transient
+    private String suffix;
+
+    public String fileNmString() {
+        return new StringBuilder()
+            .append(lastNm!=null ? lastNm : "")
+            .append("_")
+            .append(documentTypeString!=null ? documentTypeString : DocumentTypeEnum.getDescByKey(documentType)).toString();
+    }
+
+    public String getFullNm() {
+        StringBuilder fullNm = new StringBuilder();
+        if (lastNm!=null) {
+            fullNm.append(lastNm);
+        }
+        if (firstNm!=null) {
+            fullNm.append(", ")
+                    .append(firstNm);
+        }
+        if (middleNm!=null) {
+            fullNm.append(", ")
+                    .append(middleNm);
+        }
+        if (suffix!=null) {
+            fullNm.append(" ")
+                    .append(suffix);
+        }
+        return fullNm.toString();
+    }
+
     public DocumentModel(DocumentRequest documentRequest) {
         if (documentRequest != null) {
             setId(documentRequest.getId());
@@ -57,6 +97,9 @@ public class DocumentModel extends BaseModel {
             setPurpose(documentRequest.getPurpose());
             setDocumentType(documentRequest.getDocumentType());
             setDateRequested(documentRequest.getDateRequested());
+            setHeader(documentRequest.getHeader());
+            setBody(documentRequest.getBody());
+            setFooter(documentRequest.getFooter());
             setStatus(documentRequest.getStatus());
         }
     }

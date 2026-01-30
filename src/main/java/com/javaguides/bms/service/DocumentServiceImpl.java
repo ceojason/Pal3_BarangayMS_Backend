@@ -13,13 +13,15 @@ import com.javaguides.bms.model.NotifLogsModel;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.basemodel.SmsModel;
 import com.javaguides.bms.model.requestmodel.DocumentRequest;
+import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.DocumentReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -95,7 +97,7 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
         placeholders.put("${RESIDENT_ADDRESS}", "<strong>" + user.getHomeAddress() + "</strong>");
         placeholders.put("${RESIDENCY_DATE}", "<strong>" + DateUtil.getDateStringWithFormat(user.getDateEnrolled(), DateFormatEnum.DT_FORMAT_1.getPattern()) + "</strong>");
         placeholders.put("${PURPOSE}", "<strong>" + modelObj.getPurpose() + "</strong>");
-        placeholders.put("${DATE}", "<strong>" + DateUtil.getDateStringWithFormat(documentRequest.getDateRequested(), DateFormatEnum.DT_FORMAT_12.getPattern()) + "</strong>");
+        placeholders.put("${DATE}", "<strong>" + DateUtil.getDateStringWithFormat(documentRequest.getDateRequested(), DateFormatEnum.DT_FORMAT_5.getPattern()) + "</strong>");
 
 
         DocumentTypeEnum docType = DocumentTypeEnum.getByKey(modelObj.getDocumentType());
@@ -168,6 +170,52 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
             e.printStackTrace();
             return "<p style='color:red'>Failed to load document template: " + e.getMessage() + "</p>";
         }
+    }
+
+    @Override
+    public Page<DocumentReturnModel> searchRequests(MainSearchRequest searchRequest, PageRequest pageRequest) {
+        Page<DocumentModel> users = documentJDBCRepository.searchRequests(searchRequest, pageRequest);
+        return users.map(DocumentReturnModel::new);
+    }
+
+    @Override
+    public DocumentReturnModel getRequestById(String id) {
+        DocumentReturnModel returnObj = new DocumentReturnModel();
+        Optional<DocumentModel> document = documentJDBCRepository.findById(id);
+        if (document.isPresent()) {
+            Optional<UsersModel> user = usersJDBCRepository.findById(document.get().getUserId());
+
+            returnObj.setId(document.get().getId());
+            returnObj.setUserId(document.get().getUserId());
+            returnObj.setPurpose(document.get().getPurpose());
+            returnObj.setDocumentType(document.get().getDocumentType());
+            returnObj.setDocumentTypeString(DocumentTypeEnum.getDescByKey(returnObj.getDocumentType()));
+            returnObj.setStatus(document.get().getStatus());
+            returnObj.setStatusString(SystemStatusEnum.getDscpByKey(returnObj.getStatus()));
+            returnObj.setRefNo(document.get().getRefNo());
+            returnObj.setDateRequested(document.get().getDateRequested());
+            returnObj.setDateRequestedString(DateUtil.getDateStringWithFormat(returnObj.getDateRequested(), DateFormatEnum.DT_FORMAT_12.getPattern()));
+            returnObj.setRequestor(user.isPresent() ? user.get().getFullNm() : "");
+            returnObj.setHeader(document.get().getHeader());
+            String body = document.get().getBody();
+
+            body = body.replaceAll("\\d{2}/\\d{2}/\\d{4}",
+                    DateUtil.getDateStringWithFormat(new Date(), DateFormatEnum.DT_FORMAT_5.getPattern())
+            );
+            returnObj.setBody(body);
+
+            returnObj.setFooter(document.get().getFooter());
+        }
+        return returnObj;
+    }
+
+    @Override
+    public DocumentReturnModel processDocument(DocumentRequest request) {
+        DocumentModel document = new DocumentModel(request);
+        document.setDateProcessed(new Date());
+        documentJDBCRepository.updateDocument(document);
+
+        return new DocumentReturnModel(document);
     }
 
 }

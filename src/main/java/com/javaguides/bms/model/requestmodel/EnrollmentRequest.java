@@ -36,7 +36,7 @@ public class EnrollmentRequest {
     private Integer enrolleeTypeKey;
     private List<String> enrolledSubjects;
     private Date dateEnrolled;
-
+    private String dateEnrolledString;
 
     private String suffix;
     private Date birthDt;
