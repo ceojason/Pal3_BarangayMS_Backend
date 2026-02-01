@@ -27,6 +27,8 @@ public class DocumentReturnModel {
     private Date dateRequested;
     private String dateRequestedString;
     private String ackMessage;
+    private Date dateProcessed;
+    private String dateProcessedString;
 
     private String requestor;
     private String fileNm;
@@ -46,6 +48,8 @@ public class DocumentReturnModel {
         this.refNo = model.getRefNo();
         this.dateRequested = model.getDateRequested();
         this.dateRequestedString = DateUtil.getDateStringWithFormat(dateRequested, DateFormatEnum.DT_FORMAT_12.getPattern());
+        this.dateProcessed = model.getDateProcessed();
+        this.dateProcessedString = DateUtil.getDateStringWithFormat(dateProcessed, DateFormatEnum.DT_FORMAT_12.getPattern());
         this.ackMessage = model.getAckMessage();
 
         this.requestor = model.getFullNm();

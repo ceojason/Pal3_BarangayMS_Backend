@@ -50,8 +50,8 @@ public class DocumentJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implement
     public Integer getCount() {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("today", new java.sql.Date(System.currentTimeMillis()));
-        map.addValue("status", SystemStatusEnum.REJECTED.getKey());
-        String sql = "SELECT COUNT(ID) FROM " + tblName + " WHERE STATUS != :status ";
+        map.addValue("status", SystemStatusEnum.PENDING.getKey());
+        String sql = "SELECT COUNT(ID) FROM " + tblName + " WHERE STATUS = :status ";
         return namedParameterJdbcTemplate.queryForObject(sql, map, Integer.class);
     }
 
@@ -179,12 +179,17 @@ public class DocumentJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implement
             conditions.add(tblNameAlias + ".REF_NO = :refNo");
         }
 
-        if (request.getIsPending()!=null && request.getIsPending().equals(YesOrNoEnum.YES.getBooleanVal())) {
-            map.addValue("status", SystemStatusEnum.REJECTED.getKey());
-            conditions.add(tblNameAlias + ".STATUS != :status");
+        if (request.getUserId()!=null) {
+            map.addValue("userId", request.getUserId());
+            conditions.add(tblNameAlias + ".USER_ID = :userId");
         }else{
-            map.addValue("status", SystemStatusEnum.REJECTED.getKey());
-            conditions.add(tblNameAlias + ".STATUS = :status");
+            if (request.getIsPending()!=null && request.getIsPending().equals(YesOrNoEnum.YES.getBooleanVal())) {
+                map.addValue("status", SystemStatusEnum.REJECTED.getKey());
+                conditions.add(tblNameAlias + ".STATUS != :status");
+            }else{
+                map.addValue("status", SystemStatusEnum.REJECTED.getKey());
+                conditions.add(tblNameAlias + ".STATUS = :status");
+            }
         }
 
         if (!conditions.isEmpty()) {

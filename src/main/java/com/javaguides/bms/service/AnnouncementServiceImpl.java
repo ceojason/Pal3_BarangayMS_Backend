@@ -160,6 +160,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
 
         assert returnModel.getAnnouncementModels()!=null;
         boolean isSingle = returnModel.getAnnouncementModels().size() == 1;
+        returnModel.setRefNo(returnModel.getAnnouncementModels().get(0).getRefNo());
         returnModel.setAckMessage(StringMessagesUtil.formatMsgString(
                 isSingle ? StringMessagesUtil.SENT_SINGLE_SUFFIX : StringMessagesUtil.SENT_MULTIPLE_SUFFIX,
                 isSingle ? StringMessagesUtil.ANNOUNCEMENT : StringMessagesUtil.ANNOUNCEMENTS

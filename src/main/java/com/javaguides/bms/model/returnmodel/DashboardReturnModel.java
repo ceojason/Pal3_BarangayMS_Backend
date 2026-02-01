@@ -15,10 +15,14 @@ public class DashboardReturnModel {
     private String paramCount1;
     private String paramCount2;
     private String paramCount3;
+    private String paramCount4;
+    private String paramCount5;
 
     private String paramLabel1;
     private String paramLabel2;
     private String paramLabel3;
+    private String paramLabel4;
+    private String paramLabel5;
 
     private List<AnnouncementModel> announcementList;
 }

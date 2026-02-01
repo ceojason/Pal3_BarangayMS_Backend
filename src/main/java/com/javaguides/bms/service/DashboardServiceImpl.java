@@ -45,6 +45,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
             modelObj.setParamCount2(String.valueOf(announcement));
             modelObj.setParamLabel2("No. of announcement sent today");
 
+            // getting pending requests
             modelObj.setParamCount3(documentJDBCRepository.getCount().toString());
             modelObj.setParamLabel3("No. of pending requests");
         }

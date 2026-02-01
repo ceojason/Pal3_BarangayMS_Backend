@@ -18,4 +18,6 @@ public class MainSearchRequest extends SearchBaseModel {
 
     private String requestor;
     private Boolean isPending;
+    private Boolean isUser;
+    private String userId;
 }

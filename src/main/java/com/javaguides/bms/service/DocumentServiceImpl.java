@@ -109,7 +109,7 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
 
         SmsModel sms = new SmsModel();
         sms.setRecipient(user.getFormattedMobileNo());
-        sms.setMessage("Hi, " + user.getFirstNm() + "! Your " + modelObj.getDocumentTypeString() + " has been submitted successfully.");
+        sms.setMessage("Hi, " + user.getFirstNm() + "! Your " + modelObj.getDocumentTypeString() + " request has been submitted successfully.");
         //smsService.sendSms(sms);
 
         NotifLogsModel notifLogsModel = new NotifLogsModel();
@@ -214,6 +214,33 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
         DocumentModel document = new DocumentModel(request);
         document.setDateProcessed(new Date());
         documentJDBCRepository.updateDocument(document);
+
+        Optional<UsersModel> user = usersJDBCRepository.findById(request.getUserId());
+
+        String message = null;
+        if (document.getStatus().equals(SystemStatusEnum.PROCESSED.getKey())) {
+            message = "Hi, " + user.get().getFirstNm() + "! Your " + DocumentTypeEnum.getDescByKey(document.getDocumentType()) + " request with reference number " + document.getRefNo()
+                    + " has been processed and can now be claimed at barangay office. Thank you!";
+        }else{
+            message = "Hi, " + user.get().getFirstNm() + "! Your " + DocumentTypeEnum.getDescByKey(document.getDocumentType()) + " request with reference number " + document.getRefNo()
+                    + " has been rejected and cannot be processed at the moment. You can follow-up with your request with the assigned barangay personnel. Thank you!";
+        }
+
+        SmsModel sms = new SmsModel();
+        sms.setRecipient(user.get().getFormattedMobileNo());
+        sms.setMessage(message);
+        //smsService.sendSms(sms);
+
+        NotifLogsModel notifLogsModel = new NotifLogsModel();
+        notifLogsModel.setRefNo(generateReferenceNumber(null));
+        notifLogsModel.setUserId(user.get().getUserId());
+        notifLogsModel.setMessage(sms.getMessage());
+        notifLogsModel.setRecipient(user.get().getFullNm());
+        notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
+        notifLogsModel.setSentDt(new Date());
+        notifLogsModel.setType(SmsTypeEnum.DOCUMENT_REQUEST.getKey());
+        notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+        notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
 
         return new DocumentReturnModel(document);
     }
