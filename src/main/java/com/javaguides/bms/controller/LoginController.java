@@ -45,13 +45,11 @@ public class LoginController {
         Object userObj = session.getAttribute("user");
         if (userObj!=null) {
             LoginCreds user = (LoginCreds) userObj;
-            List<LoginCreds> list = loginJDBCRepository.getUserById(user.getUserId());
-            if (list==null || list.isEmpty()) {
+            Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(user.getUserId());
+            if (loginObj.isEmpty()) {
                 return ResponseEntity.status(401).body("Unauthorized: No user in session");
-            } else if (list.size()>1) {
-                return ResponseEntity.status(401).body("Unauthorized: No user in session");
-            } else {
-                LoginCreds loginCreds = list.get(0);
+            }else{
+                LoginCreds loginCreds = loginObj.get();
                 //##########################
                 //      System Admin
                 //##########################

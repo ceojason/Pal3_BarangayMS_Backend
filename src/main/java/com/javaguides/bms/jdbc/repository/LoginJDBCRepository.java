@@ -3,11 +3,13 @@ package com.javaguides.bms.jdbc.repository;
 import com.javaguides.bms.model.LoginCreds;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LoginJDBCRepository {
-    List<LoginCreds> getUserByCd(String userCd);
 
-    List<LoginCreds> getUserById(String id);
+    Optional<LoginCreds> getUserByCd(String userCd);
+
+    Optional<LoginCreds> getUserById(String id);
 
     int update(LoginCreds model);
 

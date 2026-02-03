@@ -54,13 +54,11 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
             Object userObj = session.getAttribute("user");
             if (userObj!=null) {
                 LoginCreds user = (LoginCreds) userObj;
-                List<LoginCreds> list = loginJDBCRepository.getUserById(user.getUserId());
-                if (list==null || list.isEmpty()) {
+                Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(user.getUserId());
+                if (loginObj.isEmpty()) {
                     return null;
-                } else if (list.size()>1) {
-                    return null;
-                } else {
-                    LoginCreds loginCreds = list.get(0);
+                }else {
+                    LoginCreds loginCreds = loginObj.get();
                     modelObj.setAnnouncementList(announcementJDBCRepository.findAnnouncementByUserId(loginCreds.getUserId()));
                 }
             }

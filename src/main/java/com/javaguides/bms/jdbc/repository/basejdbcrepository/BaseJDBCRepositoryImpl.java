@@ -182,10 +182,8 @@ public class BaseJDBCRepositoryImpl implements BaseJDBCRepository {
             );
             return Optional.ofNullable(result);
         } catch (EmptyResultDataAccessException e) {
-            // No record found
             return Optional.empty();
         } catch (Exception e) {
-            // Unexpected error
             System.err.println("Error in findById for table " + tableName + ": " + e.getMessage());
             e.printStackTrace();
             return Optional.empty();

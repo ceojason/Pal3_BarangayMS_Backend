@@ -181,13 +181,11 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
             Object userObj = session.getAttribute("user");
             if (userObj!=null) {
                 LoginCreds user = (LoginCreds) userObj;
-                List<LoginCreds> list = loginJDBCRepository.getUserById(user.getUserId());
-                if (list==null || list.isEmpty()) {
+                Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(user.getUserId());
+                if (loginObj.isEmpty()) {
                     return null;
-                } else if (list.size()>1) {
-                    return null;
-                } else {
-                    LoginCreds loginCreds = list.get(0);
+                }else {
+                    LoginCreds loginCreds = loginObj.get();
                     List<AnnouncementModel> modelObj = announcementJDBCRepository.findAnnouncementByUserIdGrouped(loginCreds.getUserId());
                     grouped = modelObj.stream().collect(Collectors.groupingBy(a ->
                             DateUtil.getDateStringWithFormat(a.getCreatedDt(), DateFormatEnum.DT_FORMAT_5.getPattern()), LinkedHashMap::new, Collectors.toList()));

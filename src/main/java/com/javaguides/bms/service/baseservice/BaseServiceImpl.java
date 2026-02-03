@@ -18,7 +18,7 @@ public abstract class BaseServiceImpl implements BaseService {
     }
 
     public void throwErrorMessage(String error) {
-        throw new ErrorException(Arrays.asList(error));
+        throw new ErrorException(Collections.singletonList(error));
     }
 
     public void checkIfOnlyNumber(String input, String fieldNm, List<String> errorList) {

@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class LoginJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements LoginJDBCRepository {
@@ -22,25 +22,25 @@ public class LoginJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements L
     }
 
     @Override
-    public List<LoginCreds> getUserByCd(String userCd) {
+    public Optional<LoginCreds> getUserByCd(String userCd) {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("cd", userCd);
 
         StringBuilder sql = new StringBuilder()
                 .append(" SELECT * ").append(" FROM ").append(tblLogin)
                 .append(" WHERE ").append(" CD = :cd ");
-        return namedParameterJdbcTemplate.query(sql.toString(), map, new BeanPropertyRowMapper<>(LoginCreds.class));
+        return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(sql.toString(), map, new BeanPropertyRowMapper<>(LoginCreds.class)));
     }
 
     @Override
-    public List<LoginCreds> getUserById(String id) {
+    public Optional<LoginCreds> getUserById(String id) {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("id", id);
 
         StringBuilder sql = new StringBuilder()
                 .append(" SELECT * ").append(" FROM ").append(tblLogin)
                 .append(" WHERE ").append(" USER_ID = :id ");
-        return namedParameterJdbcTemplate.query(sql.toString(), map, new BeanPropertyRowMapper<>(LoginCreds.class));
+        return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(sql.toString(), map, new BeanPropertyRowMapper<>(LoginCreds.class)));
     }
 
     @Override

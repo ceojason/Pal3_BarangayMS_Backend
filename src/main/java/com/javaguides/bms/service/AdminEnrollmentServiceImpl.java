@@ -94,15 +94,12 @@ public class AdminEnrollmentServiceImpl extends BaseServiceImpl implements Admin
     public AdminReturnModel findByUserId(String userId) {
         AdminReturnModel returnObj = new AdminReturnModel();
         Optional<SystemAdminModel> user = systemAdminJDBCRepository.findById(userId);
-        List<LoginCreds> login = loginJDBCRepository.getUserById(userId);
+        Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(userId);
         if (user.isPresent()) {
             SystemAdminModel modelObj = user.get();
-
-            if (login!=null && !login.isEmpty()) {
-                if (login.size()==1) {
-                    returnObj.setLastLoginDt(login.get(0).getUpdatedDt());
-                    returnObj.setLastLoginDtString(DateUtil.getDateStringWithFormat(returnObj.getLastLoginDt(), DateFormatEnum.DT_FORMAT_7.getPattern()));
-                }
+            if (loginObj.isPresent()) {
+                returnObj.setLastLoginDt(loginObj.get().getUpdatedDt());
+                returnObj.setLastLoginDtString(DateUtil.getDateStringWithFormat(returnObj.getLastLoginDt(), DateFormatEnum.DT_FORMAT_7.getPattern()));
             }
 
             returnObj.setId(modelObj.getId());
@@ -146,6 +143,10 @@ public class AdminEnrollmentServiceImpl extends BaseServiceImpl implements Admin
         SystemAdminModel modelObj = new SystemAdminModel(request);
         validate(modelObj);
 
+        Optional<LoginCreds> loginCreds = loginJDBCRepository.getUserByCd(modelObj.getCd());
+        if (loginCreds.isPresent()) {
+            throwErrorMessage("User ID was already taken. Please try again.");
+        }
         systemAdminJDBCRepository.updateAdmin(modelObj);
         try {
             checkCdAndPasswordThenSave(modelObj);
@@ -163,16 +164,12 @@ public class AdminEnrollmentServiceImpl extends BaseServiceImpl implements Admin
 
     public void checkCdAndPasswordThenSave(SystemAdminModel modelObj) throws Exception {
         String userId = modelObj.getId();
-        List<LoginCreds> login = loginJDBCRepository.getUserById(userId);
+        Optional<LoginCreds> login = loginJDBCRepository.getUserById(userId);
 
-        if (login==null || login.isEmpty()) {
+        if (login.isEmpty()) {
             throwErrorMessage("No user was found.");
-        }
-        else if (login.size()>1) {
-            throwErrorMessage("An error occurred fetching user's data.");
-        }
-        else {
-            LoginCreds user = login.get(0);
+        }else{
+            LoginCreds user = login.get();
             if (modelObj.getCd()!=null) {
                 user.setCd(modelObj.getCd());
             }

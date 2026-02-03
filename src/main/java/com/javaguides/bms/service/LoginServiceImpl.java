@@ -49,13 +49,11 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 
         if (obj.getErrorList()!=null && !obj.getErrorList().isEmpty()) throwErrorMessages(obj.getErrorList());
 
-        List<LoginCreds> lcList = loginJDBCRepository.getUserByCd(obj.getCd());
-        if (lcList==null || lcList.isEmpty()) {
-            obj.getErrorList().add("The user ID or password is incorrect. Please try again.");
-        } else if (lcList.size() > 1) {
-            obj.getErrorList().add("There is an error upon login. Please contact the system administrator for assistance.");
-        } else {
-            LoginCreds loginCreds = lcList.get(0);
+        Optional<LoginCreds> loginObj = loginJDBCRepository.getUserByCd(obj.getCd());
+        if (loginObj.isEmpty()) {
+            obj.getErrorList().add("Incorrect User ID and Password. Please try again.");
+        }else{
+            LoginCreds loginCreds = loginObj.get();
             String passwordFromDb = loginCreds.getPassword();
             byte[] salt = loginCreds.getSalt();
             String hashPassword = KeyHasher.hashPassword(obj.getPassword(), salt);

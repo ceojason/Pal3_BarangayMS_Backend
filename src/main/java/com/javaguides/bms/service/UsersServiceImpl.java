@@ -235,6 +235,10 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         UsersModel modelObj = new UsersModel(requestObj);
         validateObj(modelObj);
 
+        Optional<LoginCreds> loginCreds = loginJDBCRepository.getUserByCd(modelObj.getCd());
+        if (loginCreds.isPresent()) {
+            throwErrorMessage("User ID was already taken. Please try again.");
+        }
         usersJDBCRepository.updateUser(modelObj);
         try {
             checkCdAndPasswordThenSave(modelObj);
@@ -252,16 +256,12 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
     public void checkCdAndPasswordThenSave(UsersModel modelObj) throws Exception {
         String userId = modelObj.getId();
-        List<LoginCreds> login = loginJDBCRepository.getUserById(userId);
+        Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(userId);
 
-        if (login==null || login.isEmpty()) {
+        if (loginObj.isEmpty()) {
             throwErrorMessage("No user was found.");
-        }
-        else if (login.size()>1) {
-            throwErrorMessage("An error occurred fetching user's data.");
-        }
-        else {
-            LoginCreds user = login.get(0);
+        }else {
+            LoginCreds user = loginObj.get();
             if (modelObj.getCd()!=null) {
                 user.setCd(modelObj.getCd());
             }
@@ -289,8 +289,8 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
                 returnObj.setLastNm(user.get().getLastNm());
             }
 
-            List<LoginCreds> list = loginJDBCRepository.getUserById(userId);
-            if (list.size()!=1) {
+            Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(userId);
+            if (loginObj.isEmpty()) {
                 errorList.add("An error occurred while processing the user's data.");
             }
         }
@@ -307,15 +307,11 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     @Override
     public UsersReturnModel reset(EnrollmentRequest requestObj, HttpSession session) {
         UsersModel modelObj = new UsersModel(requestObj);
-        List<LoginCreds> login = loginJDBCRepository.getUserById(requestObj.getId());
-        if (login==null || login.isEmpty()) {
+        Optional<LoginCreds> login = loginJDBCRepository.getUserById(requestObj.getId());
+        if (login.isEmpty()) {
             throwErrorMessage("No user was found.");
-        }
-        else if (login.size()>1) {
-            throwErrorMessage("An error occurred fetching user's data.");
-        }
-        else {
-            LoginCreds loginObj = login.get(0);
+        }else {
+            LoginCreds loginObj = login.get();
             String defaultPass = KeyHasher.generateDefaultPassword();
             String defaultCd = KeyHasher.generateDefaultCd().toUpperCase();
 
@@ -358,15 +354,13 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     public UsersReturnModel findByUserId(String userId) {
         UsersReturnModel returnObj = new UsersReturnModel();
         Optional<UsersModel> user = usersJDBCRepository.findById(userId);
-        List<LoginCreds> login = loginJDBCRepository.getUserById(userId);
+        Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(userId);
         if (user.isPresent()) {
             UsersModel modelObj = user.get();
 
-            if (login!=null && !login.isEmpty()) {
-                if (login.size()==1) {
-                    returnObj.setLastLoginDt(login.get(0).getUpdatedDt());
-                    returnObj.setLastLoginDtString(DateUtil.getDateStringWithFormat(returnObj.getLastLoginDt(), DateFormatEnum.DT_FORMAT_7.getPattern()));
-                }
+            if (loginObj.isPresent()) {
+                returnObj.setLastLoginDt(loginObj.get().getUpdatedDt());
+                returnObj.setLastLoginDtString(DateUtil.getDateStringWithFormat(returnObj.getLastLoginDt(), DateFormatEnum.DT_FORMAT_7.getPattern()));
             }
 
             returnObj.setId(modelObj.getId());
