@@ -1,6 +1,8 @@
 package com.javaguides.bms.controller;
 
 import com.javaguides.bms.helper.ApiResponseModel;
+import com.javaguides.bms.helper.JwtUtil;
+import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.requestmodel.DocumentRequest;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
@@ -17,8 +19,20 @@ public class DocumentController {
     private final DocumentService documentService;
 
     @PostMapping("/validateRequest")
-    public ApiResponseModel validateRequest(@RequestBody DocumentRequest requestObj, HttpSession session) {
-        return new ApiResponseModel(documentService.validateRequest(requestObj, session));
+    public ApiResponseModel validateRequest(@RequestBody DocumentRequest requestObj, @RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return new ApiResponseModel("Unauthorized");
+        }
+        String token = authHeader.substring(7);
+        LoginCreds loginUser;
+
+        try {
+            loginUser = JwtUtil.parseToken(token);
+        } catch (Exception e) {
+            return new ApiResponseModel("Invalid token");
+        }
+
+        return new ApiResponseModel(documentService.validateRequest(requestObj, loginUser.getUserId()));
     }
 
     @PostMapping("/saveRequest")
@@ -27,8 +41,20 @@ public class DocumentController {
     }
 
     @PostMapping("/previewRequest")
-    public ApiResponseModel previewRequest(@RequestBody DocumentRequest requestObj, HttpSession session) {
-        return new ApiResponseModel(documentService.previewRequest(requestObj, session));
+    public ApiResponseModel previewRequest(@RequestBody DocumentRequest requestObj, @RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return new ApiResponseModel("Unauthorized");
+        }
+        String token = authHeader.substring(7);
+        LoginCreds loginUser;
+
+        try {
+            loginUser = JwtUtil.parseToken(token);
+        } catch (Exception e) {
+            return new ApiResponseModel("Invalid token");
+        }
+
+        return new ApiResponseModel(documentService.previewRequest(requestObj, loginUser.getUserId()));
     }
 
     @PostMapping("/processDocument")

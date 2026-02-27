@@ -175,23 +175,22 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
     }
 
     @Override
-    public Map<String, List<AnnouncementModel>> getAnnouncementListGrouped(Integer roleKey, HttpSession session) {
+    public Map<String, List<AnnouncementModel>> getAnnouncementListGrouped(Integer roleKey, LoginCreds loginUser) {
         Map<String, List<AnnouncementModel>> grouped = new HashMap<>();
-        if (SystemUserEnum.SYSTEM_USER.getKey().equals(roleKey)) {
-            Object userObj = session.getAttribute("user");
-            if (userObj!=null) {
-                LoginCreds user = (LoginCreds) userObj;
-                Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(user.getUserId());
-                if (loginObj.isEmpty()) {
-                    return null;
-                }else {
-                    LoginCreds loginCreds = loginObj.get();
-                    List<AnnouncementModel> modelObj = announcementJDBCRepository.findAnnouncementByUserIdGrouped(loginCreds.getUserId());
-                    grouped = modelObj.stream().collect(Collectors.groupingBy(a ->
-                            DateUtil.getDateStringWithFormat(a.getCreatedDt(), DateFormatEnum.DT_FORMAT_5.getPattern()), LinkedHashMap::new, Collectors.toList()));
-                }
+
+        if (SystemUserEnum.SYSTEM_USER.getKey().equals(roleKey) && loginUser!=null) {
+            Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(loginUser.getUserId());
+            if (loginObj.isPresent()) {
+                List<AnnouncementModel> modelObj = announcementJDBCRepository.findAnnouncementByUserIdGrouped(loginObj.get().getUserId());
+                grouped = modelObj.stream()
+                        .collect(Collectors.groupingBy(
+                                a -> DateUtil.getDateStringWithFormat(a.getCreatedDt(), DateFormatEnum.DT_FORMAT_5.getPattern()),
+                                LinkedHashMap::new,
+                                Collectors.toList()
+                        ));
             }
         }
+
         return grouped;
     }
 }

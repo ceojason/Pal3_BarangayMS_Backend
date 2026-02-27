@@ -33,10 +33,10 @@ public class KeyHasher {
     static final String CHAR_POOL_CD = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
     static final int DEFAULT_LENGTH = 8;
 
-    private static String generateRandomPassword(int length) {
+    private static String generateRandomPassword() {
         SecureRandom random = new SecureRandom();
-        StringBuilder password = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
+        StringBuilder password = new StringBuilder(KeyHasher.DEFAULT_LENGTH);
+        for (int i = 0; i < KeyHasher.DEFAULT_LENGTH; i++) {
             int index = random.nextInt(CHAR_POOL.length());
             password.append(CHAR_POOL.charAt(index));
         }
@@ -54,7 +54,7 @@ public class KeyHasher {
     }
 
     public static String generateDefaultPassword() {
-        return generateRandomPassword(DEFAULT_LENGTH);
+        return generateRandomPassword();
     }
 
     public static String generateDefaultCd() {

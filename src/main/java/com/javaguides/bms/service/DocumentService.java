@@ -8,11 +8,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 public interface DocumentService {
-    DocumentReturnModel validateRequest(DocumentRequest documentRequest, HttpSession session);
+    DocumentReturnModel validateRequest(DocumentRequest documentRequest, String userId);
 
     DocumentReturnModel saveRequest(DocumentRequest documentRequest);
 
-    String previewRequest(DocumentRequest requestObj, HttpSession session);
+    String previewRequest(DocumentRequest requestObj, String userId);
 
     Page<DocumentReturnModel> searchRequests(MainSearchRequest searchRequest, PageRequest pageRequest);
 

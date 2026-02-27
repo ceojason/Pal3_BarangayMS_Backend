@@ -16,7 +16,6 @@ import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.UsersReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
 import com.javaguides.bms.service.baseservice.SmsService;
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -58,7 +57,6 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
     public UsersReturnModel validateObj(UsersModel modelObj) {
         List<String> errorList = new ArrayList<>();
-
         if (modelObj.getFirstNm()==null){
             errorList.add("First Name" + IS_REQUIRED_SUFFIX);
         }else{
@@ -171,7 +169,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
-    public UsersReturnModel saveEnrollment(EnrollmentRequest requestObj, HttpSession session) {
+    public UsersReturnModel saveEnrollment(EnrollmentRequest requestObj) {
         UsersModel modelObj = new UsersModel(requestObj);
         validateObj(modelObj);
         modelObj.setRefNo(generateReferenceNumber(ServicesEnum.ADD_USERS.getCode()));
@@ -190,10 +188,6 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
                 StringMessagesUtil.SAVED_SINGLE_SUFFIX,
                 StringMessagesUtil.USER
                 ));
-        Object user = session.getAttribute("user");
-        if (user instanceof LoginCreds currentUser) {
-            returnObj.setCreatedBy(currentUser.getCd());
-        }
         return returnObj;
     }
 
@@ -231,7 +225,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
-    public UsersReturnModel update(EnrollmentRequest requestObj, HttpSession session) {
+    public UsersReturnModel update(EnrollmentRequest requestObj) {
         UsersModel modelObj = new UsersModel(requestObj);
         validateObj(modelObj);
 
@@ -305,7 +299,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
-    public UsersReturnModel reset(EnrollmentRequest requestObj, HttpSession session) {
+    public UsersReturnModel reset(EnrollmentRequest requestObj) {
         UsersModel modelObj = new UsersModel(requestObj);
         Optional<LoginCreds> login = loginJDBCRepository.getUserById(requestObj.getId());
         if (login.isEmpty()) {

@@ -14,13 +14,13 @@ public interface UsersService {
 
     UsersReturnModel validateEnrollment(EnrollmentRequest requestObj);
 
-    UsersReturnModel saveEnrollment(EnrollmentRequest requestObj, HttpSession session);
+    UsersReturnModel saveEnrollment(EnrollmentRequest requestObj);
 
-    UsersReturnModel update(EnrollmentRequest requestObj, HttpSession session);
+    UsersReturnModel update(EnrollmentRequest requestObj);
 
     UsersReturnModel deleteUser(String userId);
 
-    UsersReturnModel reset(EnrollmentRequest requestObj, HttpSession session);
+    UsersReturnModel reset(EnrollmentRequest requestObj);
 
     UsersReturnModel findByUserId(String userId);
 

@@ -32,18 +32,18 @@ public class UsersController {
     }
 
     @PostMapping("/saveEnrollment")
-    public ApiResponseModel saveEnrollment(@RequestBody EnrollmentRequest requestObj, HttpSession session) {
-        return new ApiResponseModel(usersService.saveEnrollment(requestObj, session));
+    public ApiResponseModel saveEnrollment(@RequestBody EnrollmentRequest requestObj) {
+        return new ApiResponseModel(usersService.saveEnrollment(requestObj));
     }
 
     @PostMapping("/update")
-    public ApiResponseModel update(@RequestBody EnrollmentRequest requestObj, HttpSession session) {
-        return new ApiResponseModel(usersService.update(requestObj, session));
+    public ApiResponseModel update(@RequestBody EnrollmentRequest requestObj) {
+        return new ApiResponseModel(usersService.update(requestObj));
     }
 
     @PostMapping("/reset")
-    public ApiResponseModel reset(@RequestBody EnrollmentRequest requestObj, HttpSession session) {
-        return new ApiResponseModel(usersService.reset(requestObj, session));
+    public ApiResponseModel reset(@RequestBody EnrollmentRequest requestObj) {
+        return new ApiResponseModel(usersService.reset(requestObj));
     }
 
     @DeleteMapping("/delete/{userId}")

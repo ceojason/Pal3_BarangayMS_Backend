@@ -1,9 +1,8 @@
 package com.javaguides.bms.service;
 
 import com.javaguides.bms.model.requestmodel.LoginCredsRequest;
-import com.javaguides.bms.model.returnmodel.LoginCredsReturn;
-import jakarta.servlet.http.HttpSession;
+import com.javaguides.bms.model.returnmodel.LoginResponse;
 
 public interface LoginService {
-    LoginCredsReturn login(LoginCredsRequest loginRequest, HttpSession session) throws Exception;
+    LoginResponse login(LoginCredsRequest loginRequest) throws Exception;
 }

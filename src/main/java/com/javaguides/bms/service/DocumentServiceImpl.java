@@ -34,12 +34,12 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
     private final DocumentJDBCRepository documentJDBCRepository;
 
     @Override
-    public DocumentReturnModel validateRequest(DocumentRequest documentRequest, HttpSession session) {
+    public DocumentReturnModel validateRequest(DocumentRequest documentRequest, String userId) {
         DocumentModel modelObj = new DocumentModel(documentRequest);
-        return validateObj(modelObj, session);
+        return validateObj(modelObj, userId);
     }
 
-    public DocumentReturnModel validateObj(DocumentModel model, HttpSession session) {
+    public DocumentReturnModel validateObj(DocumentModel model, String userId) {
         List<String> errorList = new ArrayList<>();
 
         if (model.getDocumentType()!=null) {
@@ -62,12 +62,7 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
             model.setDateRequested(new Date());
         }
 
-        if (model.getUserId()==null) {
-            Object user = session.getAttribute("user");
-            if (user instanceof LoginCreds currentUser) {
-                model.setUserId(currentUser.getUserId());
-            }
-        }
+        if (userId!=null) model.setUserId(userId);
 
         List<DocumentModel> list = documentJDBCRepository.findPendingRequestByUserIdAndKey(model.getUserId(), model.getDocumentType());
         boolean hasExistingRequest = list.stream().anyMatch(doc -> SystemStatusEnum.PENDING.getKey().equals(doc.getStatus()));
@@ -145,9 +140,8 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
 
 
     @Override
-    public String previewRequest(DocumentRequest requestObj, HttpSession session) {
-        LoginCreds user = (LoginCreds) session.getAttribute("user");
-        UsersModel userObj = usersJDBCRepository.findById(user.getUserId()).orElse(new UsersModel());
+    public String previewRequest(DocumentRequest requestObj, String userId) {
+        UsersModel userObj = usersJDBCRepository.findById(userId).orElse(new UsersModel());
 
         Map<String, String> props = Map.of(
                 "${RESIDENT_NAME}", userObj.getFullNm(),

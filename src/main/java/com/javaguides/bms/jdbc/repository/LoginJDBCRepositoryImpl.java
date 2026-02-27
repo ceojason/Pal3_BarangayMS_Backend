@@ -3,6 +3,7 @@ package com.javaguides.bms.jdbc.repository;
 import com.javaguides.bms.jdbc.repository.basejdbcrepository.BaseJDBCRepositoryImpl;
 import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.helper.DbTableUtil;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -29,7 +30,13 @@ public class LoginJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements L
         StringBuilder sql = new StringBuilder()
                 .append(" SELECT * ").append(" FROM ").append(tblLogin)
                 .append(" WHERE ").append(" CD = :cd ");
-        return Optional.ofNullable(namedParameterJdbcTemplate.queryForObject(sql.toString(), map, new BeanPropertyRowMapper<>(LoginCreds.class)));
+        try {
+            LoginCreds user = namedParameterJdbcTemplate.queryForObject(sql.toString(), map, new BeanPropertyRowMapper<>(LoginCreds.class));
+            assert user!=null;
+            return Optional.of(user);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override

@@ -9,7 +9,7 @@ import java.util.List;
 @MappedSuperclass
 @Getter
 @Setter
-public class BaseModel {
+public abstract class BaseModel {
 
     @Column(name = "ID")
     private String id;

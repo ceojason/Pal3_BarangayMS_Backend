@@ -31,7 +31,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
     private DocumentJDBCRepository documentJDBCRepository;
 
     @Override
-    public DashboardReturnModel getDashboardData(Integer roleKey, HttpSession session) {
+    public DashboardReturnModel getDashboardData(Integer roleKey, String userId) {
         DashboardReturnModel modelObj = new DashboardReturnModel();
 
         if (SystemUserEnum.SYSTEM_ADMIN.getKey().equals(roleKey)) {
@@ -51,13 +51,11 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
         }
 
         if (SystemUserEnum.SYSTEM_USER.getKey().equals(roleKey)) {
-            Object userObj = session.getAttribute("user");
-            if (userObj!=null) {
-                LoginCreds user = (LoginCreds) userObj;
-                Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(user.getUserId());
+            if (userId!=null) {
+                Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(userId);
                 if (loginObj.isEmpty()) {
                     return null;
-                }else {
+                }else{
                     LoginCreds loginCreds = loginObj.get();
                     modelObj.setAnnouncementList(announcementJDBCRepository.findAnnouncementByUserId(loginCreds.getUserId()));
                 }

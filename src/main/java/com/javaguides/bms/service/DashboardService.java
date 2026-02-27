@@ -4,5 +4,5 @@ import com.javaguides.bms.model.returnmodel.DashboardReturnModel;
 import jakarta.servlet.http.HttpSession;
 
 public interface DashboardService {
-    DashboardReturnModel getDashboardData(Integer roleKey, HttpSession session);
+    DashboardReturnModel getDashboardData(Integer roleKey, String userId);
 }

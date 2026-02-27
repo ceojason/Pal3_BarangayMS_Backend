@@ -1,6 +1,7 @@
 package com.javaguides.bms.service;
 
 import com.javaguides.bms.model.AnnouncementModel;
+import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.AnnouncementReturnModel;
@@ -19,5 +20,5 @@ public interface AnnouncementService {
 
     Page<AnnouncementReturnModel> searchAnnouncement(MainSearchRequest searchRequest, PageRequest pageRequest);
 
-    Map<String, List<AnnouncementModel>> getAnnouncementListGrouped(Integer roleKey, HttpSession session);
+    Map<String, List<AnnouncementModel>> getAnnouncementListGrouped(Integer roleKey, LoginCreds loginCreds);
 }

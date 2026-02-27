@@ -7,7 +7,6 @@ import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Getter;
