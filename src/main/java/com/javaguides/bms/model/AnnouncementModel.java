@@ -54,10 +54,19 @@ public class AnnouncementModel extends BaseModel {
     private List<Integer> recipientKeys;
 
     @Transient
+    private List<String> recipientList;
+
+    @Transient
     private String recipientListString;
 
     @Transient
     private String recipientNm;
+
+    @Transient
+    private String mobileNo;
+
+    @Transient
+    private String emailAddress;
 
     @Transient
     private String typeString;

@@ -15,6 +15,7 @@ import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.AnnouncementReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
+import com.javaguides.bms.service.baseservice.EmailService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
     private final AnnouncementJDBCRepository announcementJDBCRepository;
     private final NotifLogsJDBCRepository notifLogsJDBCRepository;
     private final LoginJDBCRepository loginJDBCRepository;
+    private final EmailService emailService;
 
     private UsersJDBCRepository usersJDBCRepository;
 
@@ -110,12 +112,17 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 .collect(Collectors.joining(", "));
         modelObj.setRecipientListString(recipientNames);
 
+        List<String> recipientList = users.stream().map(UsersModel::getFullNm).sorted().toList();
+        modelObj.setRecipientList(recipientList);
+
         Date createdDt = new Date();
         String generatedGrpId = UUID.randomUUID().toString().replace("-", "");
         List<AnnouncementModel> models = users.stream()
                 .map(u -> {
                     AnnouncementModel m = new AnnouncementModel();
                     m.setUserId(u.getId());
+                    m.setMobileNo(u.getMobileNo());
+                    m.setEmailAddress(u.getEmailAddress());
                     m.setRefNo(generateReferenceNumber(ServicesEnum.ADD_ANNOUNCEMENT.getCode()));
                     m.setGrpId(generatedGrpId);
                     m.setRecipientNm(u.getFullNm());
@@ -144,7 +151,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
             returnModel.getAnnouncementModels().forEach(modelObj -> {
                 NotifLogsModel notifLogsModel = new NotifLogsModel();
                 notifLogsModel.setRefNo(generateReferenceNumber(null));
-                notifLogsModel.setUserId(modelObj.getId());
+                notifLogsModel.setUserId(modelObj.getUserId());
                 notifLogsModel.setMessage(modelObj.getMessage());
                 notifLogsModel.setRecipient(modelObj.getRecipientNm());
                 notifLogsModel.setIsSmsEmail(modelObj.getIsSmsEmail());
@@ -152,6 +159,13 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 notifLogsModel.setType(modelObj.getType());
                 notifLogsModel.setStatus(modelObj.getStatus());
                 notifList.add(notifLogsModel);
+
+                if (request.getIsSmsEmail().equals(ChannelEnum.EMAIL.getKey()) && modelObj.getEmailAddress()!=null) {
+                    emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(),
+                            request.getHeader() + ": " + AlertStatusEnum.getDesc3ByKey(modelObj.getType()) + " Announcement",
+                            modelObj.getMessage()
+                    );
+                }
             });
         }
 

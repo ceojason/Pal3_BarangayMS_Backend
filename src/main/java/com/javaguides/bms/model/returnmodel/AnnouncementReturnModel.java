@@ -40,6 +40,7 @@ public class AnnouncementReturnModel {
     private String recipientTypeString;
     private String userId;
 
+    private List<String> recipientList;
     private List<AnnouncementModel> announcementModels;
 
     public AnnouncementReturnModel(AnnouncementModel model) {
@@ -57,6 +58,7 @@ public class AnnouncementReturnModel {
         this.refNo = model.getRefNo();
         this.ackMessage = model.getAckMessage();
         this.announcementModels = model.getAnnouncementModels();
+        this.recipientList = model.getRecipientList();
         this.recipientListString = model.getRecipientListString();
         this.userId = model.getUserId();
         this.recipientFullNm = model.getFullNm();

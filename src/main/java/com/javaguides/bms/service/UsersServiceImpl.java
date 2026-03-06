@@ -209,7 +209,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         SmsModel sms = new SmsModel();
         sms.setRecipient(modelObj.getFormattedMobileNo());
         sms.setMessage("Hi, " + modelObj.getFirstNm()  + "! User ID: " + defaultCd + ", Password: " + defaultPass);
-        //smsService.sendSms(sms);
+        smsService.sendSms(sms);
 
         //saving notif logs
         NotifLogsModel notifLogsModel = new NotifLogsModel();
@@ -321,7 +321,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             SmsModel sms = new SmsModel();
             sms.setRecipient(modelObj.getFormattedMobileNo());
             sms.setMessage("Hi, " + modelObj.getFirstNm()  + "! Your account was successfully reset. User ID: " + defaultCd + ", Password: " + defaultPass);
-            //smsService.sendSms(sms);
+            smsService.sendSms(sms);
 
             //saving notif logs
             NotifLogsModel notifLogsModel = new NotifLogsModel();
