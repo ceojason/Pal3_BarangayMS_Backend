@@ -19,10 +19,12 @@ public final class StringMessagesUtil {
     public static final String IS_REQUIRED_SUFFIX = "{} is required.";
     public static final String INVALID_OBJ = "Invalid {}.";
 
-    public static final String SENT_SINGLE_SUFFIX = "{} was successfully created and sent.";
-    public static final String SENT_MULTIPLE_SUFFIX = "{} were successfully created and sent.";
+    public static final String SENT_SINGLE_SUFFIX = "{} was successfully created and now processing.";
+    public static final String SENT_MULTIPLE_SUFFIX = "{} were successfully created and now processing.";
 
     public static final String SUBMITTED_SINGLE_SUFFIX = "{} was successfully submitted.";
+
+    public static final String BARANGAY_CITY_DEFAULT = "PALIPARAN 3 DASMARIÑAS CITY CAVITE";
 
 
     /////////////////////// object || variable names ///////////////////////

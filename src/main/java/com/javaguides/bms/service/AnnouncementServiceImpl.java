@@ -147,6 +147,8 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         AnnouncementReturnModel returnModel = new AnnouncementReturnModel(model);
         List<NotifLogsModel> notifList = new ArrayList<>();
 
+        Integer isSmsOrEmail = request.getIsSmsEmail();
+        String emailHeader = request.getHeader();
         if (returnModel.getAnnouncementModels()!=null && !returnModel.getAnnouncementModels().isEmpty()) {
             returnModel.getAnnouncementModels().forEach(modelObj -> {
                 NotifLogsModel notifLogsModel = new NotifLogsModel();
@@ -160,9 +162,9 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 notifLogsModel.setStatus(modelObj.getStatus());
                 notifList.add(notifLogsModel);
 
-                if (request.getIsSmsEmail().equals(ChannelEnum.EMAIL.getKey()) && modelObj.getEmailAddress()!=null) {
+                if (ChannelEnum.EMAIL.getKey().equals(isSmsOrEmail) && modelObj.getEmailAddress()!=null) {
                     emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(),
-                            request.getHeader() + ": " + AlertStatusEnum.getDesc3ByKey(modelObj.getType()) + " Announcement",
+                            emailHeader + ": " + AlertStatusEnum.getDesc3ByKey(modelObj.getType()) + " Announcement",
                             modelObj.getMessage()
                     );
                 }
