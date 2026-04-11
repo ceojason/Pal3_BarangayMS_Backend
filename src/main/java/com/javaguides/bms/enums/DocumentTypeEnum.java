@@ -13,7 +13,7 @@ public enum DocumentTypeEnum {
     BARANGAY_CLEARANCE(0, "Barangay Clearance",
             "templates/documents/barangay_clearance.docx",
             "BARANGAY CLEARANCE",
-            "This is to certify that ${RESIDENT_NAME}, residing at ${RESIDENT_ADDRESS}, has been a resident of this barangay since ${RESIDENCY_DATE} and is known to be of good moral character.\n\n\nPurpose: ${PURPOSE}\n\nIssued this ${DATE}.",
+            "This is to certify that ${RESIDENT_NAME}, residing at ${RESIDENT_ADDRESS}, has been a resident of this barangay and is known to be of good moral character.\n\n\nPurpose: ${PURPOSE}\n\nIssued this ${DATE}.",
             "__________________________________\nPunong Barangay"
     ),
     BUSINESS_CLEARANCE(1, "Business Clearance",
@@ -31,7 +31,7 @@ public enum DocumentTypeEnum {
     CERT_OF_RESIDENCY(3, "Certificate of Residency",
             "templates/documents/certificate_of_residency.docx",
             "CERTIFICATE OF RESIDENCY",
-            "This certifies that ${RESIDENT_NAME}, residing at ${RESIDENT_ADDRESS}, has been residing in Barangay ${BARANGAY_NAME}, ${CITY} since ${RESIDENCY_DATE}.\n\nPurpose: ${PURPOSE}\n\nIssued this ${DATE}.",
+            "This certifies that ${RESIDENT_NAME}, residing at ${RESIDENT_ADDRESS}, has been residing in Barangay ${BARANGAY_NAME}.\n\nPurpose: ${PURPOSE}\n\nIssued this ${DATE}.",
             "__________________________________\nBarangay Secretary"
     ),
     BARANGAY_ID(4, "Barangay ID", "", "", "", "");
