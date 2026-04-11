@@ -6,15 +6,18 @@ import com.javaguides.bms.helper.KeyHasher;
 import com.javaguides.bms.helper.StringMessagesUtil;
 import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
 import com.javaguides.bms.jdbc.repository.NotifLogsJDBCRepository;
+import com.javaguides.bms.jdbc.repository.SystemAdminJDBCRepository;
 import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
 import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.NotifLogsModel;
+import com.javaguides.bms.model.SystemAdminModel;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.basemodel.SmsModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.UsersReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
+import com.javaguides.bms.service.baseservice.EmailService;
 import com.javaguides.bms.service.baseservice.SmsService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +42,9 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     private final UsersJDBCRepository usersJDBCRepository;
     private final LoginJDBCRepository loginJDBCRepository;
     private final NotifLogsJDBCRepository notifLogsJDBCRepository;
+    private final SystemAdminJDBCRepository systemAdminJDBCRepository;
     private final SmsService smsService;
+    private final EmailService emailService;
     private final AuditLogService auditLogService;
     static final String IS_REQUIRED_SUFFIX = " is required.";
 
@@ -108,7 +113,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         if (modelObj.getBirthDt()==null) {
             errorList.add("Birth date" + IS_REQUIRED_SUFFIX);
         }else{
-            boolean isValidDt = DateUtil.checkValidDateFrom(modelObj.getBirthDt(), 10);
+            boolean isValidDt = DateUtil.checkValidDateFrom(modelObj.getBirthDt(), 8);
             if (isValidDt) {
                 modelObj.setBirthDtString(DateUtil.getDateStringWithFormat(modelObj.getBirthDt(), DateFormatEnum.DT_FORMAT_1.getPattern()));
             }else{
@@ -299,6 +304,62 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
+    public UsersReturnModel resetNoSession(EnrollmentRequest requestObj) {
+        List<String> errorList = new ArrayList<>();
+        if (requestObj.getFirstNm()==null){
+            errorList.add("First Name" + IS_REQUIRED_SUFFIX);
+        }else{
+            requestObj.setFirstNm(requestObj.getFirstNm().trim().toUpperCase());
+        }
+
+        if (requestObj.getLastNm()==null){
+            errorList.add("Last Name" + IS_REQUIRED_SUFFIX);
+        }else{
+            requestObj.setLastNm(requestObj.getLastNm().trim().toUpperCase());
+        }
+
+        if (requestObj.getMobileNo()==null) {
+            errorList.add("Mobile Number" + IS_REQUIRED_SUFFIX);
+        }else{
+            checkIfOnlyNumber(requestObj.getMobileNo(), "Mobile Number", errorList);
+            maxStringCharCounter(requestObj.getMobileNo(), 11, "Mobile Number", errorList);
+            minStringCharCounter(requestObj.getMobileNo(), 11, "Mobile Number", errorList);
+            String to = requestObj.getMobileNo();
+            if (requestObj.getMobileNo().startsWith("0")) {
+                requestObj.setFormattedMobileNo("+63" + to.substring(1));
+            }
+        }
+
+        if (!errorList.isEmpty()) throwErrorMessages(errorList);
+        MainSearchRequest sr = new MainSearchRequest();
+        sr.setFirstNm(requestObj.getFirstNm());
+        sr.setLastNm(requestObj.getLastNm());
+        sr.setBirthDt(requestObj.getBirthDt());
+        sr.setMobileNo(requestObj.getMobileNo());
+
+        UsersModel modelObj = usersJDBCRepository.findUserInResetNoSession(sr);
+        boolean noUserFound = false;
+        if (modelObj==null || modelObj.getId()==null) {
+            noUserFound = true;
+        }else{
+            requestObj.setId(modelObj.getId());
+            requestObj.setEmailAddress(modelObj.getEmailAddress()!=null ? modelObj.getEmailAddress() : null);
+        }
+
+        if (noUserFound) {
+            SystemAdminModel adminObj = systemAdminJDBCRepository.findUserInResetNoSession(sr); //check if the user is admin
+            if (adminObj!=null && adminObj.getId()!=null) {
+                noUserFound = false;
+                requestObj.setId(adminObj.getId());
+                requestObj.setEmailAddress(adminObj.getEmailAddress()!=null ? adminObj.getEmailAddress() : null);
+            }
+        }
+
+        if (noUserFound) throwErrorMessage("No user was found.");
+        return reset(requestObj);
+    }
+
+    @Override
     public UsersReturnModel reset(EnrollmentRequest requestObj) {
         UsersModel modelObj = new UsersModel(requestObj);
         Optional<LoginCreds> login = loginJDBCRepository.getUserById(requestObj.getId());
@@ -318,10 +379,14 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             loginObj.setCd(defaultCd);
             loginJDBCRepository.update(loginObj);
 
+            String msg = "Hi, " + modelObj.getFirstNm()  + "! Your account was successfully reset. User ID: " + defaultCd + ", Password: " + defaultPass;
             SmsModel sms = new SmsModel();
             sms.setRecipient(modelObj.getFormattedMobileNo());
-            sms.setMessage("Hi, " + modelObj.getFirstNm()  + "! Your account was successfully reset. User ID: " + defaultCd + ", Password: " + defaultPass);
+            sms.setMessage(msg);
             smsService.sendSms(sms);
+            if (requestObj.getEmailAddress()!=null) {
+                emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(), "Reset User Confirmation", msg);
+            }
 
             //saving notif logs
             NotifLogsModel notifLogsModel = new NotifLogsModel();

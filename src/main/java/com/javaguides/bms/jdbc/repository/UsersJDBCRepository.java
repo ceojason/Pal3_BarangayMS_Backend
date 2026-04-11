@@ -23,4 +23,6 @@ public interface UsersJDBCRepository {
     Optional<UsersModel> findById(String id);
 
     int deleteById(String id);
+
+    UsersModel findUserInResetNoSession(MainSearchRequest searchRequest);
 }

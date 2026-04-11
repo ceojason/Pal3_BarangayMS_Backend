@@ -6,6 +6,7 @@ import com.javaguides.bms.jdbc.repository.basejdbcrepository.BaseJDBCRepositoryI
 import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -169,5 +170,37 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
         StringBuilder sql = new StringBuilder()
                 .append(" DELETE FROM ").append(tblUsers).append(" WHERE ").append(" ID = :id ");
         return namedParameterJdbcTemplate.update(sql.toString(), map);
+    }
+
+    @Override
+    public UsersModel findUserInResetNoSession(MainSearchRequest searchRequest) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+
+        map.addValue("firstNm", searchRequest.getFirstNm());
+        map.addValue("lastNm", searchRequest.getLastNm());
+        map.addValue("mobileNo", searchRequest.getMobileNo());
+
+        StringBuilder sql = new StringBuilder()
+                .append(" SELECT * ")
+                .append(" FROM ").append(tblUsers)
+                .append(" WHERE ");
+
+        if (searchRequest.getFirstNm() != null && !searchRequest.getFirstNm().isEmpty()) {
+            sql.append(" first_nm = :firstNm ");
+        }
+
+        if (searchRequest.getLastNm() != null && !searchRequest.getLastNm().isEmpty()) {
+            sql.append(" AND last_nm = :lastNm ");
+        }
+
+        if (searchRequest.getMobileNo() != null && !searchRequest.getMobileNo().isEmpty()) {
+            sql.append(" AND mobile_no = :mobileNo ");
+        }
+
+        try {
+            return namedParameterJdbcTemplate.queryForObject(sql.toString(), map, new BeanPropertyRowMapper<>(UsersModel.class));
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 }

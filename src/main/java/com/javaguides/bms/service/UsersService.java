@@ -20,6 +20,8 @@ public interface UsersService {
 
     UsersReturnModel deleteUser(String userId);
 
+    UsersReturnModel resetNoSession(EnrollmentRequest requestObj);
+
     UsersReturnModel reset(EnrollmentRequest requestObj);
 
     UsersReturnModel findByUserId(String userId);
