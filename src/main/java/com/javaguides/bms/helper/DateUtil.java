@@ -31,4 +31,15 @@ public class DateUtil {
         return !inputDate.isAfter(cutoffDate);
     }
 
+    public static boolean isPresentOrFuture(Date dateVal) {
+        if (dateVal == null) return false;
+
+        LocalDate inputDate = dateVal.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        LocalDate today = LocalDate.now();
+
+        return !inputDate.isBefore(today);
+    }
 }

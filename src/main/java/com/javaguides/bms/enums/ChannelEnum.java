@@ -10,7 +10,8 @@ import java.util.List;
 public enum ChannelEnum {
 
     SMS(0, "SMS"),
-    EMAIL(1, "Email")
+    EMAIL(1, "Email"),
+    ALL(2, "SMS/Email")
     ;
 
     private final Integer key;
@@ -29,4 +30,19 @@ public enum ChannelEnum {
         return list;
     }
 
+    public static String getStringByKey(Integer key) {
+        if (key!=null) {
+            for (ChannelEnum val : values()) {
+                if (val.getKey().equals(key)) return val.getDesc();
+            }
+        }
+        return "";
+    }
+
+    public static List<Integer> sendViaEmailKeys() {
+        List<Integer> val = new ArrayList<>();
+        val.add(EMAIL.getKey());
+        val.add(ALL.getKey());
+        return val;
+    }
 }

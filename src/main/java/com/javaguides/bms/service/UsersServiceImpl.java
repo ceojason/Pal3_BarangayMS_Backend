@@ -306,6 +306,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     @Override
     public UsersReturnModel resetNoSession(EnrollmentRequest requestObj) {
         List<String> errorList = new ArrayList<>();
+        requestObj.setHasNoSession(true);
         if (requestObj.getFirstNm()==null){
             errorList.add("First Name" + IS_REQUIRED_SUFFIX);
         }else{
@@ -343,6 +344,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             noUserFound = true;
         }else{
             requestObj.setId(modelObj.getId());
+            requestObj.setMiddleNm(modelObj.getMiddleNm()!=null ? modelObj.getMiddleNm() : null);
             requestObj.setEmailAddress(modelObj.getEmailAddress()!=null ? modelObj.getEmailAddress() : null);
         }
 
@@ -351,6 +353,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             if (adminObj!=null && adminObj.getId()!=null) {
                 noUserFound = false;
                 requestObj.setId(adminObj.getId());
+                requestObj.setMiddleNm(adminObj.getMiddleNm()!=null ? adminObj.getMiddleNm() : null);
                 requestObj.setEmailAddress(adminObj.getEmailAddress()!=null ? adminObj.getEmailAddress() : null);
             }
         }
@@ -384,12 +387,8 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             sms.setRecipient(modelObj.getFormattedMobileNo());
             sms.setMessage(msg);
             smsService.sendSms(sms);
-            if (requestObj.getEmailAddress()!=null) {
-                emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(), "Reset User Confirmation", msg);
-            }
 
-            //saving notif logs
-            NotifLogsModel notifLogsModel = new NotifLogsModel();
+            NotifLogsModel notifLogsModel = new NotifLogsModel(); //saving notif logs
             notifLogsModel.setRefNo(generateReferenceNumber(null));
             notifLogsModel.setUserId(modelObj.getId());
             notifLogsModel.setMessage(sms.getMessage());
@@ -399,13 +398,32 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             notifLogsModel.setType(SmsTypeEnum.RESET_USER.getKey());
             notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
             notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+
+            if (requestObj.getEmailAddress()!=null) {
+                emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(), "Reset User Confirmation", msg);
+                notifLogsModel = new NotifLogsModel();
+                notifLogsModel.setRefNo(generateReferenceNumber(null));
+                notifLogsModel.setUserId(modelObj.getId());
+                notifLogsModel.setMessage(sms.getMessage());
+                notifLogsModel.setRecipient(modelObj.getFullNm());
+                notifLogsModel.setIsSmsEmail(YesOrNoEnum.NO.getKey());
+                notifLogsModel.setSentDt(new Date());
+                notifLogsModel.setType(SmsTypeEnum.RESET_USER.getKey());
+                notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+                notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+            }
         }
 
         UsersReturnModel returnObj = new UsersReturnModel();
-        returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
-                StringMessagesUtil.RESET_SINGLE_SUFFIX,
-                StringMessagesUtil.USER
-        ));
+        StringBuilder ackMsg = new StringBuilder()
+                .append(StringMessagesUtil.formatMsgString(
+                        StringMessagesUtil.RESET_SINGLE_SUFFIX,
+                        StringMessagesUtil.USER));
+        if (requestObj.getHasNoSession()!=null && requestObj.getHasNoSession()) {
+            ackMsg.append(" ").append("Please check your new login details through SMS or Email.");
+        }
+
+        returnObj.setAckMessage(ackMsg.toString());
         return returnObj;
     }
 

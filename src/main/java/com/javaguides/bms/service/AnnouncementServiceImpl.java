@@ -62,6 +62,22 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
             modelObj.setTypeString(SmsTypeEnum.getDescByKey(modelObj.getType()));
         }
 
+        if (modelObj.getLocation()!=null) {
+            modelObj.setLocation(modelObj.getLocation().trim().toUpperCase());
+        }
+
+        if (modelObj.getTime()!=null) {
+            modelObj.setTime(modelObj.getTime().trim().toUpperCase());
+        }
+
+        if (modelObj.getDate()!=null) {
+            if (!DateUtil.isPresentOrFuture(modelObj.getDate())) {
+                errorList.add("Please select a valid announcement date.");
+            }else{
+                modelObj.setDateString(DateUtil.getDateStringWithFormat(modelObj.getDate(), DateFormatEnum.DT_FORMAT_5.getPattern()));
+            }
+        }
+
         if (modelObj.getAlertStatus()==null) {
             errorList.add("Status" + IS_REQUIRED_SUFFIX);
         }else{
@@ -71,7 +87,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         if (modelObj.getIsSmsEmail()==null) {
             errorList.add("Channel" + IS_REQUIRED_SUFFIX);
         }else{
-            modelObj.setChannelString(YesOrNoEnum.YES.getKey().equals(modelObj.getIsSmsEmail()) ? "SMS" : "Email");
+            modelObj.setChannelString(ChannelEnum.getStringByKey(modelObj.getIsSmsEmail()));
         }
 
         if (modelObj.getMessage()==null || modelObj.getMessage().isEmpty()) {
@@ -132,6 +148,10 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                     m.setAlertStatus(modelObj.getAlertStatus());
                     m.setMessage(modelObj.getMessage());
                     m.setCreatedDt(createdDt);
+                    m.setDate(modelObj.getDate());
+                    m.setLocation(modelObj.getLocation());
+                    m.setTime(modelObj.getTime());
+                    m.setResGrpDesc(modelObj.getRecipientTypeString());
                     return m;
                 })
                 .collect(Collectors.toList());
@@ -147,7 +167,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         AnnouncementReturnModel returnModel = new AnnouncementReturnModel(model);
         List<NotifLogsModel> notifList = new ArrayList<>();
 
-        Integer isSmsOrEmail = request.getIsSmsEmail();
+        boolean sendViaEmail = request.getIsSmsEmail()!=null && ChannelEnum.sendViaEmailKeys().contains(request.getIsSmsEmail());
         String emailHeader = request.getHeader();
         if (returnModel.getAnnouncementModels()!=null && !returnModel.getAnnouncementModels().isEmpty()) {
             returnModel.getAnnouncementModels().forEach(modelObj -> {
@@ -162,7 +182,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 notifLogsModel.setStatus(modelObj.getStatus());
                 notifList.add(notifLogsModel);
 
-                if (ChannelEnum.EMAIL.getKey().equals(isSmsOrEmail) && modelObj.getEmailAddress()!=null) {
+                if (sendViaEmail && modelObj.getEmailAddress()!=null) {
                     emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(),
                             emailHeader + ": " + AlertStatusEnum.getDesc3ByKey(modelObj.getType()) + " Announcement",
                             modelObj.getMessage()

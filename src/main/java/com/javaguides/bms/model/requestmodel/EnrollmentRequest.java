@@ -61,4 +61,9 @@ public class EnrollmentRequest {
     private String password;
 
     private String refNo;
+    private Date date;
+    private String time;
+    private String location;
+
+    private Boolean hasNoSession;
 }

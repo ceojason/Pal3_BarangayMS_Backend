@@ -1,9 +1,6 @@
 package com.javaguides.bms.model.returnmodel;
 
-import com.javaguides.bms.enums.AlertStatusEnum;
-import com.javaguides.bms.enums.DateFormatEnum;
-import com.javaguides.bms.enums.SmsTypeEnum;
-import com.javaguides.bms.enums.YesOrNoEnum;
+import com.javaguides.bms.enums.*;
 import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.model.AnnouncementModel;
 import lombok.Getter;
@@ -50,7 +47,7 @@ public class AnnouncementReturnModel {
         this.alertStatus = model.getAlertStatus();
         this.alertTypeString = AlertStatusEnum.getDesc3ByKey(alertStatus);
         this.isSmsEmail = model.getIsSmsEmail();
-        this.isSmsEmailString = YesOrNoEnum.YES.getKey().equals(isSmsEmail) ? "SMS" : "Email";
+        this.isSmsEmailString = ChannelEnum.getStringByKey(model.getIsSmsEmail());
         this.channelString = this.isSmsEmailString;
         this.header = model.getHeader();
         this.message = model.getMessage();

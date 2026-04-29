@@ -50,6 +50,21 @@ public class AnnouncementModel extends BaseModel {
     @Column(name = "CREATED_DT")
     private Date createdDt;
 
+    @Column(name = "RES_GRP_DESC")
+    private String resGrpDesc;
+
+    @Column(name = "LOCATION")
+    private String location;
+
+    @Column(name = "DATE")
+    private Date date;
+
+    @Transient
+    private String dateString;
+
+    @Column(name = "TIME")
+    private String time;
+
     @Transient
     private List<Integer> recipientKeys;
 
@@ -116,8 +131,21 @@ public class AnnouncementModel extends BaseModel {
 
     public String getFullNm() {
         StringBuilder fullNm = new StringBuilder();
-        fullNm.append(lastNm).append(", ").append(firstNm).append(", ")
-                .append(middleNm!=null ? middleNm : "").append(" ").append(suffix!=null ? suffix : "");
+        if (lastNm!=null) {
+            fullNm.append(lastNm);
+        }
+        if (firstNm!=null) {
+            fullNm.append(", ")
+                    .append(firstNm);
+        }
+        if (middleNm!=null) {
+            fullNm.append(", ")
+                    .append(middleNm);
+        }
+        if (suffix!=null) {
+            fullNm.append(" ")
+                    .append(suffix);
+        }
         return fullNm.toString();
     }
 
@@ -133,6 +161,9 @@ public class AnnouncementModel extends BaseModel {
             setIsSmsEmail(request.getIsSmsEmail());
             setMessage(request.getMessage());
             setRecipientKeys(request.getRecipientKeys());
+            setDate(request.getDate());
+            setTime(request.getTime());
+            setLocation(request.getLocation());
         }
     }
 

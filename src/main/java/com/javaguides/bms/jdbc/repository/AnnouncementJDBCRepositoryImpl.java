@@ -48,7 +48,7 @@ public class AnnouncementJDBCRepositoryImpl extends BaseJDBCRepositoryImpl imple
     public Integer getCount() {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("today", new java.sql.Date(System.currentTimeMillis()));
-        String sql = "SELECT COUNT(ID) FROM " + tblNm + " WHERE DATE(created_dt) = :today";
+        String sql = "SELECT COUNT(DISTINCT GRP_ID) " + "FROM " + tblNm + " " + "WHERE DATE(created_dt) = :today";
         return namedParameterJdbcTemplate.queryForObject(sql, map, Integer.class);
     }
 
