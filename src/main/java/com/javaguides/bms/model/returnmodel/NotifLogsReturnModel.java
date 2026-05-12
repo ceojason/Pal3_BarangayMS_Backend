@@ -2,7 +2,7 @@ package com.javaguides.bms.model.returnmodel;
 
 import com.javaguides.bms.enums.AlertStatusEnum;
 import com.javaguides.bms.enums.DateFormatEnum;
-import com.javaguides.bms.enums.SmsTypeEnum;
+import com.javaguides.bms.enums.LogsTypeEnum;
 import com.javaguides.bms.enums.YesOrNoEnum;
 import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.model.NotifLogsModel;
@@ -46,7 +46,7 @@ public class NotifLogsReturnModel {
         this.userId = model.getUserId();
 
         this.type = model.getType();
-        this.typeString = SmsTypeEnum.getDescByKey(type);
+        this.typeString = LogsTypeEnum.getDescByKey(type);
 
         this.status = model.getStatus();
         this.statusString = AlertStatusEnum.getDesc3ByKey(status);

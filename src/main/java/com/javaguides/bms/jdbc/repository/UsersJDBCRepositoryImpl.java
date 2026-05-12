@@ -3,6 +3,7 @@ package com.javaguides.bms.jdbc.repository;
 import com.javaguides.bms.helper.DbTableUtil;
 import com.javaguides.bms.helper.GenericRowMapper;
 import com.javaguides.bms.jdbc.repository.basejdbcrepository.BaseJDBCRepositoryImpl;
+import com.javaguides.bms.model.HouseholdModel;
 import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
@@ -66,21 +67,50 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
     }
 
     private String selectQry(StringBuilder whereClause) {
+        String tblHousehold = DbTableUtil.getTableName(HouseholdModel.class);
+        String tblHouseholdAlias = DbTableUtil.getTableAlias(HouseholdModel.class);
+
         StringBuilder query = new StringBuilder()
-                .append(" SELECT ").append(DbTableUtil.buildSelectClause(UsersModel.class)).append(", ")
-                .append(DbTableUtil.buildSelectClause(LoginCreds.class))
-                .append(" FROM ").append(DbTableUtil.getTableNameWithAlias(UsersModel.class))
-                .append(" LEFT JOIN ").append(DbTableUtil.getTableNameWithAlias(LoginCreds.class))
+                .append(" SELECT ")
+                .append(DbTableUtil.buildSelectClause(UsersModel.class)).append(", ")
+                .append(DbTableUtil.buildSelectClause(LoginCreds.class)).append(", ")
+                .append(DbTableUtil.buildSelectClause(HouseholdModel.class))
+                .append(" FROM ")
+                .append(DbTableUtil.getTableNameWithAlias(UsersModel.class))
+
+                .append(" LEFT JOIN ")
+                .append(DbTableUtil.getTableNameWithAlias(LoginCreds.class))
                 .append(" ON ")
                 .append(tblUsersAlias).append(".ID = ")
                 .append(tblLoginAlias).append(".USER_ID ")
+
+                .append(" LEFT JOIN ")
+                .append(tblHousehold).append(" ").append(tblHouseholdAlias)
+                .append(" ON ")
+                .append(tblUsersAlias).append(".HOUSEHOLD_KEY = ")
+                .append(tblHouseholdAlias).append(".ID ")
+
                 .append(whereClause);
+
         return query.toString();
     }
 
     private String countQry(StringBuilder whereClause) {
+        String tblHousehold = DbTableUtil.getTableName(HouseholdModel.class);
+        String tblHouseholdAlias = DbTableUtil.getTableAlias(HouseholdModel.class);
+
         StringBuilder sql = new StringBuilder()
-                .append( " SELECT ").append(count()).append(" FROM ").append(DbTableUtil.getTableNameWithAlias(UsersModel.class)).append(whereClause);
+                .append(" SELECT ").append(count())
+                .append(" FROM ").append(DbTableUtil.getTableNameWithAlias(UsersModel.class))
+
+                .append(" LEFT JOIN ")
+                .append(tblHousehold).append(" ").append(tblHouseholdAlias)
+                .append(" ON ")
+                .append(tblUsersAlias).append(".HOUSEHOLD_KEY = ")
+                .append(tblHouseholdAlias).append(".ID ")
+
+                .append(whereClause);
+
         return sql.toString();
     }
 
@@ -129,6 +159,13 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
                     }
                     if (fieldName.equals("cd")) {
                         users.setCd((String) row.get(key));
+                    }
+                }
+
+                if (key.startsWith("th_")) {
+                    String fieldName = key.substring(3);
+                    if (fieldName.equals("householdDesc")) {
+                        users.setHouseholdDesc((String) row.get(key));
                     }
                 }
             }

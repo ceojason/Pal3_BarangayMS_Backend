@@ -1,11 +1,13 @@
 package com.javaguides.bms.model.returnmodel;
 
 import com.javaguides.bms.model.AnnouncementModel;
+import com.javaguides.bms.model.NotifLogsModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Objects;
 
 @Setter
 @Getter
@@ -23,6 +25,8 @@ public class DashboardReturnModel {
     private String paramLabel3;
     private String paramLabel4;
     private String paramLabel5;
+
+    private List<NotifLogsModel> logsList;
 
     private List<AnnouncementModel> announcementList;
 }

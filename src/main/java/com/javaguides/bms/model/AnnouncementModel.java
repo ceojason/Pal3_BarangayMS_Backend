@@ -2,7 +2,10 @@ package com.javaguides.bms.model;
 
 import com.javaguides.bms.customannotations.TableAlias;
 import com.javaguides.bms.enums.AlertStatusEnum;
-import com.javaguides.bms.enums.SmsTypeEnum;
+import com.javaguides.bms.enums.ChannelEnum;
+import com.javaguides.bms.enums.DateFormatEnum;
+import com.javaguides.bms.enums.LogsTypeEnum;
+import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import jakarta.persistence.Column;
@@ -11,7 +14,6 @@ import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.catalina.User;
 
 import java.util.Date;
 import java.util.List;
@@ -50,13 +52,10 @@ public class AnnouncementModel extends BaseModel {
     @Column(name = "CREATED_DT")
     private Date createdDt;
 
-    @Column(name = "RES_GRP_DESC")
-    private String resGrpDesc;
-
     @Column(name = "LOCATION")
     private String location;
 
-    @Column(name = "DATE")
+    @Column(name = "ANN_DATE")
     private Date date;
 
     @Transient
@@ -100,11 +99,19 @@ public class AnnouncementModel extends BaseModel {
     }
 
     public String getTypeString() {
-        return SmsTypeEnum.getDescByKey(type);
+        return LogsTypeEnum.getDescByKey(type);
     }
 
     public String getMessageTypeString() {
         return getTypeString() + " - " + getAlertStatusString();
+    }
+
+    public String getCreatedDtString() {
+        return DateUtil.getDateStringWithFormat(createdDt, DateFormatEnum.DT_FORMAT_5.getPattern() + " " + DateFormatEnum.DT_FORMAT_14.getPattern());
+    }
+
+    public String getIsSmsEmailString() {
+        return ChannelEnum.getStringByKey(isSmsEmail);
     }
 
     @Transient

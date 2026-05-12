@@ -37,13 +37,18 @@ public class AnnouncementReturnModel {
     private String recipientTypeString;
     private String userId;
 
+    private String location;
+    private String date;
+    private String dateString;
+    private String time;
+
     private List<String> recipientList;
     private List<AnnouncementModel> announcementModels;
 
     public AnnouncementReturnModel(AnnouncementModel model) {
         this.id = model.getId();
         this.type = model.getType();
-        this.typeString = SmsTypeEnum.getDescByKey(type);
+        this.typeString = LogsTypeEnum.getDescByKey(type);
         this.alertStatus = model.getAlertStatus();
         this.alertTypeString = AlertStatusEnum.getDesc3ByKey(alertStatus);
         this.isSmsEmail = model.getIsSmsEmail();
@@ -61,5 +66,8 @@ public class AnnouncementReturnModel {
         this.recipientFullNm = model.getFullNm();
         this.createdDt = model.getCreatedDt();
         this.createdDtString = DateUtil.getDateStringWithFormat(createdDt, DateFormatEnum.DT_FORMAT_7.getPattern());
+        this.location = model.getLocation();
+        this.date = model.getDateString()!=null ? model.getDateString() : DateUtil.getDateStringWithFormat(model.getDate(), DateFormatEnum.DT_FORMAT_5.getPattern());
+        this.time = model.getTime();
     }
 }

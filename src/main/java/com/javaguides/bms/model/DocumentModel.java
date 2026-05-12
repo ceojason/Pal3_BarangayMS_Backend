@@ -1,6 +1,7 @@
 package com.javaguides.bms.model;
 
 import com.javaguides.bms.customannotations.TableAlias;
+import com.javaguides.bms.enums.DocumentSubCatEnum;
 import com.javaguides.bms.enums.DocumentTypeEnum;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.DocumentRequest;
@@ -11,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Getter
@@ -26,23 +28,23 @@ public class DocumentModel extends BaseModel {
     @Column(name = "REF_NO")
     private String refNo;
 
-    @Column(name = "DOCUMENT_TYPE")
-    private Integer documentType;
+    @Column(name = "DOCU_CAT_KEY")
+    private Integer docuCategoryKey;
 
-    @Column(name = "PURPOSE")
-    private String purpose;
+    @Column(name = "DOCU_SUBCAT_KEY")
+    private Integer docuSubCategoryKey;
+
+    @Column(name = "PROCESS_FEE")
+    private BigDecimal processFee;
+
+    @Column(name = "PURPOSE_KEY")
+    private Integer purposeKey;
+
+    @Column(name = "OTH_PURPOSE")
+    private String othPurpose;
 
     @Column(name = "DATE_REQUESTED")
     private Date dateRequested;
-
-    @Column(name = "HEADER")
-    private String header;
-
-    @Column(name = "BODY")
-    private String body;
-
-    @Column(name = "FOOTER")
-    private String footer;
 
     @Column(name = "DATE_PROCESSED")
     private Date dateProcessed;
@@ -60,13 +62,80 @@ public class DocumentModel extends BaseModel {
     private String lastNm;
 
     @Transient
+    private String docuCategoryKeyString;
+
+    @Transient
+    private String docuSubCategoryKeyString;
+
+    @Transient
+    private String purposeKeyString;
+
+    @Transient
+    private String processFeeString;
+
+    @Transient
     private String suffix;
+
+    @Transient
+    private String block;
+
+    @Transient
+    private String lot;
+
+    @Transient
+    private String street;
+
+    @Transient
+    private String requestor;
+
+    @Transient
+    private Date birthDt;
+
+    @Transient
+    private String gender;
+
+    @Transient
+    private Integer civilStatusKey;
+
+    @Transient
+    private String mobileNo;
+
+    @Transient
+    private Integer phaseKey;
+
+    @Transient
+    private String birthDtString;
+
+    @Transient
+    private String genderString;
+
+    @Transient
+    private String civilStatusString;
+
+
+    public String getHomeAddress() {
+        String defaultBrgyNmCityAndProv = "PALIPARAN III DASMARIÑAS CITY, CAVITE";
+        String defaultZipCd = "4114";
+        boolean appendDefaultAddressString = true;
+
+        StringBuilder address = new StringBuilder();
+        if (block!=null) address.append(block).append(" ");
+        if (lot!=null) address.append(lot).append(" ");
+        if (street!=null) address.append(street);
+
+        if (appendDefaultAddressString) {
+            address.append(defaultBrgyNmCityAndProv).append(" ");
+            address.append(defaultZipCd);
+        }
+
+        return address.toString();
+    }
 
     public String fileNmString() {
         return new StringBuilder()
             .append(lastNm!=null ? lastNm : "")
             .append("_")
-            .append(documentTypeString!=null ? documentTypeString : DocumentTypeEnum.getDescByKey(documentType)).toString();
+            .append(docuSubCategoryKey!=null ? DocumentSubCatEnum.getDocuSubCatDescByKey(docuSubCategoryKey) : "PAL3_File").toString();
     }
 
     public String getFullNm() {
@@ -94,12 +163,12 @@ public class DocumentModel extends BaseModel {
             setId(documentRequest.getId());
             setRefNo(documentRequest.getRefNo());
             setUserId(documentRequest.getUserId());
-            setPurpose(documentRequest.getPurpose());
-            setDocumentType(documentRequest.getDocumentType());
+            setDocuCategoryKey(documentRequest.getDocuCategoryKey());
+            setDocuSubCategoryKey(documentRequest.getDocuSubCategoryKey());
+            setProcessFee(documentRequest.getProcessFee());
+            setPurposeKey(documentRequest.getPurposeKey());
+            setOthPurpose(documentRequest.getOthPurpose());
             setDateRequested(documentRequest.getDateRequested());
-            setHeader(documentRequest.getHeader());
-            setBody(documentRequest.getBody());
-            setFooter(documentRequest.getFooter());
             setStatus(documentRequest.getStatus());
         }
     }

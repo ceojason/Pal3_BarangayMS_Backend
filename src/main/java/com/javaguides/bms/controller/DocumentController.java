@@ -7,6 +7,7 @@ import com.javaguides.bms.model.requestmodel.DocumentRequest;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.service.DocumentService;
+import com.javaguides.bms.service.ProcessFeeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,12 @@ import org.springframework.web.bind.annotation.*;
 public class DocumentController {
 
     private final DocumentService documentService;
+    private final ProcessFeeService processFeeService;
+
+    @GetMapping("/getProcessFeeByKey/{key}")
+    public ApiResponseModel getProcessFeeByKey(@PathVariable Integer key) {
+        return new ApiResponseModel(processFeeService.getProcessFeeByKey(key));
+    }
 
     @PostMapping("/validateRequest")
     public ApiResponseModel validateRequest(@RequestBody DocumentRequest requestObj, @RequestHeader("Authorization") String authHeader) {

@@ -4,14 +4,8 @@ import com.javaguides.bms.enums.*;
 import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.helper.KeyHasher;
 import com.javaguides.bms.helper.StringMessagesUtil;
-import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
-import com.javaguides.bms.jdbc.repository.NotifLogsJDBCRepository;
-import com.javaguides.bms.jdbc.repository.SystemAdminJDBCRepository;
-import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
-import com.javaguides.bms.model.LoginCreds;
-import com.javaguides.bms.model.NotifLogsModel;
-import com.javaguides.bms.model.SystemAdminModel;
-import com.javaguides.bms.model.UsersModel;
+import com.javaguides.bms.jdbc.repository.*;
+import com.javaguides.bms.model.*;
 import com.javaguides.bms.model.basemodel.SmsModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
@@ -42,6 +36,8 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     private final UsersJDBCRepository usersJDBCRepository;
     private final LoginJDBCRepository loginJDBCRepository;
     private final NotifLogsJDBCRepository notifLogsJDBCRepository;
+    private final HouseholdService householdService;
+    private final HouseholdJDBCRepository householdJDBCRepository;
     private final SystemAdminJDBCRepository systemAdminJDBCRepository;
     private final SmsService smsService;
     private final EmailService emailService;
@@ -55,8 +51,41 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
+    public String createHouseholdForRegistration(EnrollmentRequest requestObj) {
+        StringBuilder tempHousehold = new StringBuilder();
+        if (requestObj.getLastNm()!=null && !requestObj.getLastNm().isEmpty()) {
+            tempHousehold.append(requestObj.getLastNm().trim().toUpperCase());
+        }
+        tempHousehold.append(formatHouseholdUniqKey(requestObj));
+        return tempHousehold.toString();
+    }
+
+    public String formatHouseholdUniqKey(EnrollmentRequest requestObj) {
+        StringBuilder tempHousehold = new StringBuilder();
+        if (requestObj.getBlock()!=null && !requestObj.getBlock().isEmpty()) {
+            tempHousehold.append("_")
+                    .append(requestObj.getBlock().trim().toUpperCase());
+        }
+        if (requestObj.getLot()!=null && !requestObj.getLot().isEmpty()) {
+            tempHousehold.append("_")
+                    .append(requestObj.getLot().trim().toUpperCase());
+        }
+        if (requestObj.getStreet()!=null && !requestObj.getStreet().isEmpty()) {
+            tempHousehold.append("_")
+                    .append(requestObj.getStreet().trim().toUpperCase());
+        }
+        if (requestObj.getPhaseKey()!=null) {
+            tempHousehold.append("_")
+                    .append(PhaseEnum.getDesc2ByKey(requestObj.getPhaseKey()));
+        }
+        return tempHousehold.toString();
+    }
+
+    @Override
     public UsersReturnModel validateEnrollment(EnrollmentRequest requestObj) {
+        String tempUniqueKey = formatHouseholdUniqKey(requestObj);
         UsersModel modelObj = new UsersModel(requestObj);
+        modelObj.setTempUniqueKey(tempUniqueKey);
         return validateObj(modelObj);
     }
 
@@ -88,10 +117,54 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             modelObj.setGenderDscp(GenderEnum.getGenderDscpFromKeyStr(modelObj.getGender()));
         }
 
-        if (modelObj.getHomeAddress()==null) {
-            errorList.add("Home Address" + IS_REQUIRED_SUFFIX);
+        if (modelObj.getBlock()==null) {
+            errorList.add("Address Block" + IS_REQUIRED_SUFFIX);
         }else{
-            modelObj.setHomeAddress(modelObj.getHomeAddress().trim().toUpperCase());
+            modelObj.setBlock(modelObj.getBlock().toUpperCase());
+        }
+
+        if (modelObj.getLot()==null) {
+            errorList.add("Address Lot" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setLot(modelObj.getLot().toUpperCase());
+        }
+
+        if (modelObj.getStreet()!=null) {
+            modelObj.setStreet(modelObj.getStreet().toUpperCase());
+        }
+
+        if (modelObj.getIsHouseholdHead()==null) {
+            errorList.add("Is Household Head" + IS_REQUIRED_SUFFIX);
+        }else{
+            modelObj.setIsHouseholdHeadString(YesOrNoEnum.getDescByKey(modelObj.getIsHouseholdHead()));
+            if (modelObj.getIsHouseholdHead().equals(YesOrNoEnum.YES.getKey())) {
+                if (modelObj.getTempHouseholdForSave()==null) {
+                    errorList.add("Household Description is required for household heads and cannot be emptied.");
+                }else{
+                    Optional<HouseholdModel> household = householdJDBCRepository.findDuplicateHousehold(modelObj.getTempUniqueKey());
+                    if (household.isPresent()) {
+                        errorList.add("Household under this address was already saved in the system and currently have a head. If you wish to proceed, you must update the existing household's status to Inactive.");
+                        throwErrorMessages(errorList);
+                    }
+                }
+            }else{
+                if (modelObj.getHouseholdKey()==null) {
+                    errorList.add("Household" + IS_REQUIRED_SUFFIX);
+                }else{
+                    Optional<HouseholdModel> household = householdJDBCRepository.findById(modelObj.getHouseholdKey());
+                    household.ifPresent(householdModel -> modelObj.setTempHouseholdForSave(householdModel.getHouseholdDesc()));
+                }
+            }
+        }
+
+        if (modelObj.getHouseholdKey()!=null) {}
+
+        if (modelObj.getIsBrgyOfficial()!=null && YesOrNoEnum.YES.getKey().equals(modelObj.getIsBrgyOfficial())) {
+            if (modelObj.getBrgyPositionKey()==null) {
+                errorList.add("Please select a valid Barangay position from the list.");
+            }else{
+                modelObj.setBrgyPositionKeyString(BrgyPositionEnum.getDescByKey(modelObj.getBrgyPositionKey()));
+            }
         }
 
         if (modelObj.getMobileNo()==null) {
@@ -139,7 +212,6 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             modelObj.setPhaseString(PhaseEnum.getDesc2ByKey(modelObj.getPhaseKey()));
         }
 
-        if (modelObj.getHouseholdKey()!=null) {}
 
         if (modelObj.getOccupation()!=null) {
             modelObj.setOccupation(modelObj.getOccupation().toUpperCase().trim());
@@ -176,12 +248,28 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     @Override
     public UsersReturnModel saveEnrollment(EnrollmentRequest requestObj) {
         UsersModel modelObj = new UsersModel(requestObj);
+        modelObj.setTempUniqueKey(formatHouseholdUniqKey(requestObj));
         validateObj(modelObj);
         modelObj.setRefNo(generateReferenceNumber(ServicesEnum.ADD_USERS.getCode()));
         UsersReturnModel returnObj = new UsersReturnModel(modelObj);
 
+        String householdId = "";
+        if (modelObj.getIsHouseholdHead()!=null &&
+            modelObj.getIsHouseholdHead().equals(YesOrNoEnum.YES.getKey()) &&
+            modelObj.getTempHouseholdForSave()!=null
+        ) {
+            HouseholdModel household = new HouseholdModel();
+            household.setStatus(SystemStatusEnum.ACTIVE.getKey());
+            household.setHouseholdDesc(modelObj.getTempHouseholdForSave());
+            household.setHouseholdUniqKey(modelObj.getTempUniqueKey());
+            householdId = householdService.saveNewHousehold(household);
+        } else {
+            householdId = modelObj.getHouseholdKey();
+        }
+
+        modelObj.setHouseholdKey(householdId);
         boolean isSaved = usersJDBCRepository.saveEnrollment(modelObj)>0;
-        if (isSaved) {
+        if (isSaved && householdId!=null) {
             try {
                 saveLoginCreds(modelObj);
             } catch (Exception e) {
@@ -191,7 +279,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
         returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
                 StringMessagesUtil.SAVED_SINGLE_SUFFIX,
-                StringMessagesUtil.USER
+                StringMessagesUtil.RESIDENT
                 ));
         return returnObj;
     }
@@ -224,8 +312,10 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         notifLogsModel.setRecipient(modelObj.getFullNm());
         notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
         notifLogsModel.setSentDt(new Date());
-        notifLogsModel.setType(SmsTypeEnum.NEW_USER_SMS.getKey());
+        notifLogsModel.setType(LogsTypeEnum.NEW_USER_SMS.getKey());
         notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+        notifLogsModel.setOtherDetail(modelObj.getTempHouseholdForSave());
+        notifLogsModel.setMainActionStr(LogsTypeEnum.NEW_USER_SMS.getMainAction());
         notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
     }
 
@@ -248,7 +338,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         UsersReturnModel returnObj = new UsersReturnModel(modelObj);
         returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
                 StringMessagesUtil.UPDATED_SINGLE_SUFFIX,
-                StringMessagesUtil.USER
+                StringMessagesUtil.RESIDENT
         ));
         return returnObj;
     }
@@ -395,7 +485,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             notifLogsModel.setRecipient(modelObj.getFullNm());
             notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
             notifLogsModel.setSentDt(new Date());
-            notifLogsModel.setType(SmsTypeEnum.RESET_USER.getKey());
+            notifLogsModel.setType(LogsTypeEnum.RESET_USER.getKey());
             notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
             notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
 
@@ -408,7 +498,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
                 notifLogsModel.setRecipient(modelObj.getFullNm());
                 notifLogsModel.setIsSmsEmail(YesOrNoEnum.NO.getKey());
                 notifLogsModel.setSentDt(new Date());
-                notifLogsModel.setType(SmsTypeEnum.RESET_USER.getKey());
+                notifLogsModel.setType(LogsTypeEnum.RESET_USER.getKey());
                 notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
                 notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
             }
@@ -418,7 +508,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         StringBuilder ackMsg = new StringBuilder()
                 .append(StringMessagesUtil.formatMsgString(
                         StringMessagesUtil.RESET_SINGLE_SUFFIX,
-                        StringMessagesUtil.USER));
+                        StringMessagesUtil.RESIDENT));
         if (requestObj.getHasNoSession()!=null && requestObj.getHasNoSession()) {
             ackMsg.append(" ").append("Please check your new login details through SMS or Email.");
         }

@@ -17,7 +17,7 @@ public interface DocumentJDBCRepository {
 
     Optional<DocumentModel> findById(String id);
 
-    List<DocumentModel> findPendingRequestByUserIdAndKey(String userId, Integer key);
+    List<DocumentModel> findPendingRequestByUserIdAndKeys(String userId, Integer key1, Integer key2);
 
     Page<DocumentModel> searchRequests(MainSearchRequest requestObj, PageRequest page);
 }

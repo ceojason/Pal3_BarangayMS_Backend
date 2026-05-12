@@ -1,7 +1,11 @@
 package com.javaguides.bms.controller;
 
+import com.javaguides.bms.enums.CivilStatusEnum;
+import com.javaguides.bms.enums.DateFormatEnum;
+import com.javaguides.bms.enums.GenderEnum;
 import com.javaguides.bms.enums.SystemUserEnum;
 import com.javaguides.bms.helper.ApiResponseModel;
+import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.helper.JwtUtil;
 import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
 import com.javaguides.bms.jdbc.repository.SystemAdminJDBCRepository;
@@ -71,6 +75,7 @@ public class LoginController {
                     sessionUser.setFirstNm(a.getFirstNm());
                     sessionUser.setMiddleNm(a.getMiddleNm());
                     sessionUser.setLastNm(a.getLastNm());
+                    sessionUser.setSuffix(a.getSuffix());
                 });
             } else if (roleKey.equals(SystemUserEnum.SYSTEM_USER.getKey())) {
                 Optional<UsersModel> userObj = usersJDBCRepository.findById(userId);
@@ -78,6 +83,12 @@ public class LoginController {
                     sessionUser.setFirstNm(u.getFirstNm());
                     sessionUser.setMiddleNm(u.getMiddleNm());
                     sessionUser.setLastNm(u.getLastNm());
+                    sessionUser.setSuffix(u.getSuffix());
+                    sessionUser.setHomeAddress(u.getHomeAddress());
+                    sessionUser.setBirthDtString(u.getBirthDt()!=null ? DateUtil.getDateStringWithFormat(u.getBirthDt(), DateFormatEnum.DT_FORMAT_1.getPattern()) : null);
+                    sessionUser.setGenderString(u.getGender()!=null ? GenderEnum.getGenderDscpFromKeyStr(u.getGender()) : null);
+                    sessionUser.setCivilStatusString(u.getCivilStatusKey()!=null ? CivilStatusEnum.getCivilStatusDescByKey(u.getCivilStatusKey()) : null);
+                    sessionUser.setMobileNo(u.getMobileNo());
                 });
             }
 

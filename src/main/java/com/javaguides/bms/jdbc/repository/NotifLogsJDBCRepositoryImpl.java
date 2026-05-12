@@ -1,5 +1,6 @@
 package com.javaguides.bms.jdbc.repository;
 
+import com.javaguides.bms.enums.LogsTypeEnum;
 import com.javaguides.bms.helper.DbTableUtil;
 import com.javaguides.bms.helper.GenericRowMapper;
 import com.javaguides.bms.jdbc.repository.basejdbcrepository.BaseJDBCRepositoryImpl;
@@ -8,6 +9,7 @@ import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -38,6 +40,23 @@ public class NotifLogsJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
     @Override
     public int saveBatch(List<NotifLogsModel> list) {
         return batchSave(list);
+    }
+
+    @Override
+    public List<NotifLogsModel> findRecentResidentLogs(String userId) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("keys", LogsTypeEnum.residentLogKeys());
+        map.addValue("userId", userId);
+        map.addValue("limit", 3); //value should be from tbl_system_config
+
+        StringBuilder qry = new StringBuilder()
+                .append(" SELECT * FROM ")
+                .append(tblNotifLogs)
+                .append(userId!=null ? " WHERE USER_ID =:userId AND TYPE IN (:keys) " : "")
+                .append(" ORDER BY SENT_DT DESC ")
+                .append(" LIMIT :limit" );
+
+        return namedParameterJdbcTemplate.query(qry.toString(), map, new BeanPropertyRowMapper<>(NotifLogsModel.class));
     }
 
     @Override

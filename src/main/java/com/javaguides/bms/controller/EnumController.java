@@ -3,6 +3,7 @@ package com.javaguides.bms.controller;
 import com.javaguides.bms.helper.ApiResponseModel;
 import com.javaguides.bms.service.EnumService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,6 +46,21 @@ public class EnumController {
         return new ApiResponseModel(enumService.getDocumentList());
     }
 
+    @GetMapping("/getPurposeKeyList")
+    public ApiResponseModel getPurposeKeyList() {
+        return new ApiResponseModel(enumService.getPurposeKeyList());
+    }
+
+    @GetMapping("/getDocuCategoryList")
+    public ApiResponseModel getDocuCategoryList() {
+        return new ApiResponseModel(enumService.getDocuCategoryList());
+    }
+
+    @GetMapping("/getDocuSubCatListByKey/{key}")
+    public ApiResponseModel getDocuSubCatListByKey(@PathVariable Integer key) {
+        return new ApiResponseModel(enumService.getDocuSubCatListByKey(key));
+    }
+
     @GetMapping("/getServiceListForNav")
     public ApiResponseModel getServiceListForNav() {
         return new ApiResponseModel(enumService.getServiceListForNav());
@@ -73,6 +89,11 @@ public class EnumController {
     @GetMapping("/getResidentTypeList")
     public ApiResponseModel getResidentTypeList() {
         return new ApiResponseModel(enumService.getResidentTypeList());
+    }
+
+    @GetMapping("/getBrgyPositionList")
+    public ApiResponseModel getBrgyPositionList() {
+        return new ApiResponseModel(enumService.getBrgyPositionList());
     }
 
     @GetMapping("/getAllResidentTypeList")

@@ -1,10 +1,7 @@
 package com.javaguides.bms.service;
 
 import com.javaguides.bms.enums.SystemUserEnum;
-import com.javaguides.bms.jdbc.repository.AnnouncementJDBCRepository;
-import com.javaguides.bms.jdbc.repository.DocumentJDBCRepository;
-import com.javaguides.bms.jdbc.repository.LoginJDBCRepository;
-import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
+import com.javaguides.bms.jdbc.repository.*;
 import com.javaguides.bms.model.AnnouncementModel;
 import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.SystemAdminModel;
@@ -29,6 +26,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
     private AnnouncementJDBCRepository announcementJDBCRepository;
     private LoginJDBCRepository loginJDBCRepository;
     private DocumentJDBCRepository documentJDBCRepository;
+    private NotifLogsJDBCRepository notifLogsJDBCRepository;
 
     @Override
     public DashboardReturnModel getDashboardData(Integer roleKey, String userId) {
@@ -38,7 +36,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
             // getting users count
             Integer users = usersJDBCRepository.getUsersCount();
             modelObj.setParamCount1(String.valueOf(users));
-            modelObj.setParamLabel1("No. of registered users");
+            modelObj.setParamLabel1("No. of registered residents");
 
             // getting announcement count for today
             Integer announcement = announcementJDBCRepository.getCount();
@@ -48,6 +46,8 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
             // getting pending requests
             modelObj.setParamCount3(documentJDBCRepository.getCount().toString());
             modelObj.setParamLabel3("No. of pending requests");
+
+            modelObj.setLogsList(notifLogsJDBCRepository.findRecentResidentLogs(null));
         }
 
         if (SystemUserEnum.SYSTEM_USER.getKey().equals(roleKey)) {
@@ -58,6 +58,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
                 }else{
                     LoginCreds loginCreds = loginObj.get();
                     modelObj.setAnnouncementList(announcementJDBCRepository.findAnnouncementByUserId(loginCreds.getUserId()));
+                    modelObj.setLogsList(notifLogsJDBCRepository.findRecentResidentLogs(loginCreds.getUserId()));
                 }
             }
         }

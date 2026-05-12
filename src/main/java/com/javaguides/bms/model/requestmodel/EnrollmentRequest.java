@@ -23,6 +23,9 @@ public class EnrollmentRequest {
     private Date bday;
     private String gender;
     private String homeAddress;
+    private String block;
+    private String lot;
+    private String street;
     private String mobileNo;
     private String emailAddress;
     private String guardianFirstNm;
@@ -43,7 +46,10 @@ public class EnrollmentRequest {
     private String birthPlace;
     private Integer civilStatusKey;
     private Integer phaseKey;
-    private Integer householdKey;
+    private String householdKey;
+    private String householdKeyDscp;
+    private Integer isBrgyOfficial;
+    private Integer brgyPositionKey;
     private String occupation;
     private String religion;
     private Integer isRegisteredVoter;
@@ -64,6 +70,9 @@ public class EnrollmentRequest {
     private Date date;
     private String time;
     private String location;
+
+    private Integer isHouseholdHead;
+    private String tempHouseholdForSave;
 
     private Boolean hasNoSession;
 }

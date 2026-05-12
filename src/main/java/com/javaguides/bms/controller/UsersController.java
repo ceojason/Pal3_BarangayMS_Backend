@@ -31,6 +31,11 @@ public class UsersController {
         return new ApiResponseModel(usersService.validateEnrollment(requestObj));
     }
 
+    @PostMapping("/createHouseholdForRegistration")
+    public ApiResponseModel createHouseholdForRegistration(@RequestBody EnrollmentRequest requestObj) {
+        return new ApiResponseModel(usersService.createHouseholdForRegistration(requestObj));
+    }
+
     @PostMapping("/saveEnrollment")
     public ApiResponseModel saveEnrollment(@RequestBody EnrollmentRequest requestObj) {
         return new ApiResponseModel(usersService.saveEnrollment(requestObj));

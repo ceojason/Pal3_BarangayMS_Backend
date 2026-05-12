@@ -57,13 +57,15 @@ public class AnnouncementJDBCRepositoryImpl extends BaseJDBCRepositoryImpl imple
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("today", new java.sql.Date(System.currentTimeMillis()));
         map.addValue("userId", userId);
+        map.addValue("limit", 3); //value should be from tbl_system_config
 
         StringBuilder query = new StringBuilder()
                 .append(" SELECT ").append(DbTableUtil.buildSelectClause2(AnnouncementModel.class))
                 .append(" FROM ").append(DbTableUtil.getTableNameWithAlias(AnnouncementModel.class))
                 .append(" WHERE ").append(tblAlias).append(".USER_ID = :userId ")
                 .append(" AND DATE(created_dt) = :today ")
-                .append(" ORDER BY ").append(tblAlias).append(".CREATED_DT DESC");
+                .append(" ORDER BY ").append(tblAlias).append(".CREATED_DT DESC")
+                .append(" LIMIT :limit" );
 
         return namedParameterJdbcTemplate.query(query.toString(), map, new BeanPropertyRowMapper<>(AnnouncementModel.class));
     }
@@ -78,6 +80,7 @@ public class AnnouncementJDBCRepositoryImpl extends BaseJDBCRepositoryImpl imple
                 .append(", DATE(").append(tblAlias).append(".CREATED_DT) AS CREATED_DATE ") // optional
                 .append(" FROM ").append(DbTableUtil.getTableNameWithAlias(AnnouncementModel.class))
                 .append(" WHERE ").append(tblAlias).append(".USER_ID = :userId ")
+                .append(" AND ").append(tblAlias).append(".CREATED_DT >= DATE_SUB(NOW(), INTERVAL 3 DAY) ")
                 .append(" ORDER BY DATE(").append(tblAlias).append(".CREATED_DT) DESC, ")
                 .append(tblAlias).append(".CREATED_DT DESC");
 

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Getter
@@ -21,6 +22,12 @@ public class DocumentRequest extends BaseModel {
     private String body;
     private String header;
     private String footer;
+
+    private Integer docuCategoryKey;
+    private Integer docuSubCategoryKey;
+    private BigDecimal processFee;
+    private Integer purposeKey;
+    private String othPurpose;
 
     private String refNo;
 

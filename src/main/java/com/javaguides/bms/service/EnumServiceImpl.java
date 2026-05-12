@@ -65,6 +65,13 @@ public class EnumServiceImpl implements EnumService {
     }
 
     @Override
+    public InitializeEnumModel getBrgyPositionList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setBrgyPositionList(BrgyPositionEnum.getBrgyPositionList());
+        return enumModel;
+    }
+
+    @Override
     public InitializeEnumModel getAllResidentTypeList() {
         InitializeEnumModel enumModel = new InitializeEnumModel();
         enumModel.setAllResidentTypeList(ResidentClassificationEnum.getAllResidentClassList());
@@ -88,7 +95,7 @@ public class EnumServiceImpl implements EnumService {
     @Override
     public InitializeEnumModel getSmsTypeList() {
         InitializeEnumModel enumModel = new InitializeEnumModel();
-        enumModel.setSmsTypeList(SmsTypeEnum.getTypeList());
+        enumModel.setSmsTypeList(LogsTypeEnum.getTypeList());
         return enumModel;
     }
 
@@ -110,6 +117,27 @@ public class EnumServiceImpl implements EnumService {
     public InitializeEnumModel getDocumentList() {
         InitializeEnumModel enumModel = new InitializeEnumModel();
         enumModel.setDocumentTypeList(DocumentTypeEnum.getDocumentList());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getPurposeKeyList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setPurposeKeyList(DocumentPurposeEnum.getPurposeKeyList());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getDocuCategoryList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setDocuCategoryList(DocumentCategoryEnum.getDocumentCatList());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getDocuSubCatListByKey(Integer key) {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setDocuSubCategoryList(DocumentSubCatEnum.getDocuSubCatList(key));
         return enumModel;
     }
 }

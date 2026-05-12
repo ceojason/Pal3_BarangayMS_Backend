@@ -12,5 +12,7 @@ public interface NotifLogsJDBCRepository {
 
     int saveBatch(List<NotifLogsModel> list);
 
+    List<NotifLogsModel> findRecentResidentLogs(String userId);
+
     Page<NotifLogsModel> searchNotifLogs(MainSearchRequest requestObj, PageRequest page);
 }

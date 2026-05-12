@@ -25,6 +25,14 @@ public class SessionUserModel {
     private String firstNm;
     private String middleNm;
     private String lastNm;
+    private String suffix;
+
+    private String homeAddress;
+    private String birthDtString;
+    private String genderString;
+    private String civilStatusString;
+    private String mobileNo;
+
 
     private Date lastLoginDt;
 
@@ -41,7 +49,21 @@ public class SessionUserModel {
 
     public String getUserFullNm() {
         StringBuilder fullNm = new StringBuilder();
-        fullNm.append(firstNm).append(" ").append(middleNm!=null ? middleNm + " " : "").append(lastNm);
+        if (lastNm!=null) {
+            fullNm.append(lastNm);
+        }
+        if (firstNm!=null) {
+            fullNm.append(", ")
+                    .append(firstNm);
+        }
+        if (middleNm!=null) {
+            fullNm.append(", ")
+                    .append(middleNm);
+        }
+        if (suffix!=null) {
+            fullNm.append(" ")
+                    .append(suffix);
+        }
         return fullNm.toString();
     }
 

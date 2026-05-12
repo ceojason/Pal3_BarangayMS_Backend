@@ -1,7 +1,6 @@
 package com.javaguides.bms.service.baseservice;
 
 import com.javaguides.bms.enums.ServicesEnum;
-import com.javaguides.bms.enums.SmsTypeEnum;
 import com.javaguides.bms.helper.ErrorException;
 import com.javaguides.bms.model.basemodel.SmsModel;
 import org.springframework.transaction.annotation.Transactional;

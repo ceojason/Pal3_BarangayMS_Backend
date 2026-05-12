@@ -16,14 +16,11 @@ import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.AnnouncementReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
 import com.javaguides.bms.service.baseservice.EmailService;
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,7 +56,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         if (modelObj.getType()==null) {
             errorList.add("Type" + IS_REQUIRED_SUFFIX);
         }else{
-            modelObj.setTypeString(SmsTypeEnum.getDescByKey(modelObj.getType()));
+            modelObj.setTypeString(LogsTypeEnum.getDescByKey(modelObj.getType()));
         }
 
         if (modelObj.getLocation()!=null) {
@@ -151,7 +148,6 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                     m.setDate(modelObj.getDate());
                     m.setLocation(modelObj.getLocation());
                     m.setTime(modelObj.getTime());
-                    m.setResGrpDesc(modelObj.getRecipientTypeString());
                     return m;
                 })
                 .collect(Collectors.toList());
@@ -171,12 +167,28 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         String emailHeader = request.getHeader();
         if (returnModel.getAnnouncementModels()!=null && !returnModel.getAnnouncementModels().isEmpty()) {
             returnModel.getAnnouncementModels().forEach(modelObj -> {
+
+                StringBuilder finalMsg = new StringBuilder().append(modelObj.getMessage());
+                if (modelObj.getLocation()!=null) {
+                    finalMsg.append("\n\n").append("Location : ").append(modelObj.getLocation());
+                }
+                if (modelObj.getDate()!=null) {
+                    finalMsg.append("\n").append("Date : ").append(DateUtil.getDateStringWithFormat(modelObj.getDate(), DateFormatEnum.DT_FORMAT_5.getPattern()));
+                }
+                if (modelObj.getTime()!=null) {
+                    finalMsg.append("\n").append("Time : ").append(modelObj.getTime());
+                }
+
+                modelObj.setMessage(finalMsg.toString());
+
                 NotifLogsModel notifLogsModel = new NotifLogsModel();
                 notifLogsModel.setRefNo(generateReferenceNumber(null));
                 notifLogsModel.setUserId(modelObj.getUserId());
-                notifLogsModel.setMessage(modelObj.getMessage());
+                notifLogsModel.setMessage(finalMsg.toString());
                 notifLogsModel.setRecipient(modelObj.getRecipientNm());
                 notifLogsModel.setIsSmsEmail(modelObj.getIsSmsEmail());
+                notifLogsModel.setOtherDetail(emailHeader);
+                notifLogsModel.setMainActionStr(LogsTypeEnum.ANNOUNCEMENT_SMS.getMainAction());
                 notifLogsModel.setSentDt(new Date());
                 notifLogsModel.setType(modelObj.getType());
                 notifLogsModel.setStatus(modelObj.getStatus());
@@ -185,7 +197,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 if (sendViaEmail && modelObj.getEmailAddress()!=null) {
                     emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(),
                             emailHeader + ": " + AlertStatusEnum.getDesc3ByKey(modelObj.getType()) + " Announcement",
-                            modelObj.getMessage()
+                            finalMsg.toString()
                     );
                 }
             });

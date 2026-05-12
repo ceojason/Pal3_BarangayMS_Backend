@@ -2,13 +2,13 @@ package com.javaguides.bms.service;
 
 import com.javaguides.bms.enums.*;
 import com.javaguides.bms.helper.DateUtil;
+import com.javaguides.bms.helper.NumberFormatterUtil;
 import com.javaguides.bms.helper.StringMessagesUtil;
 import com.javaguides.bms.helper.WordPreview;
 import com.javaguides.bms.jdbc.repository.DocumentJDBCRepository;
 import com.javaguides.bms.jdbc.repository.NotifLogsJDBCRepository;
 import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
 import com.javaguides.bms.model.DocumentModel;
-import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.NotifLogsModel;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.basemodel.SmsModel;
@@ -16,7 +16,7 @@ import com.javaguides.bms.model.requestmodel.DocumentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.DocumentReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
-import jakarta.servlet.http.HttpSession;
+import com.javaguides.bms.service.baseservice.EmailService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +32,7 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
     private final NotifLogsJDBCRepository notifLogsJDBCRepository;
     private final UsersJDBCRepository usersJDBCRepository;
     private final DocumentJDBCRepository documentJDBCRepository;
+    private final EmailService emailService;
 
     @Override
     public DocumentReturnModel validateRequest(DocumentRequest documentRequest, String userId) {
@@ -42,16 +43,34 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
     public DocumentReturnModel validateObj(DocumentModel model, String userId) {
         List<String> errorList = new ArrayList<>();
 
-        if (model.getDocumentType()!=null) {
-            model.setDocumentTypeString(DocumentTypeEnum.getDescByKey(model.getDocumentType()));
+        if (model.getDocuCategoryKey()!=null) {
+            model.setDocuCategoryKeyString(DocumentCategoryEnum.getDocuCatDescByKey(model.getDocuCategoryKey()));
         }else{
-            errorList.add("Document Type" + IS_REQUIRED_SUFFIX);
+            errorList.add("Document Category" + IS_REQUIRED_SUFFIX);
         }
 
-        if (model.getPurpose()!=null) {
-            model.setPurpose(model.getPurpose().trim().toUpperCase());
+        if (model.getDocuSubCategoryKey()!=null) {
+            model.setDocuSubCategoryKeyString(DocumentSubCatEnum.getDocuSubCatDescByKey(model.getDocuSubCategoryKey()));
+        }else{
+            errorList.add("Document File" + IS_REQUIRED_SUFFIX);
+        }
+
+        model.setProcessFeeString(NumberFormatterUtil.format(model.getProcessFee()));
+
+        if (model.getPurposeKey()!=null) {
+            model.setPurposeKeyString(DocumentPurposeEnum.getDocuPurposeDescByKey(model.getPurposeKey()));
         }else{
             errorList.add("Purpose" + IS_REQUIRED_SUFFIX);
+        }
+
+        if (DocumentPurposeEnum.OTHERS.getKey().equals(model.getPurposeKey())) {
+            if (model.getOthPurpose() == null || model.getOthPurpose().trim().isEmpty()) {
+                errorList.add("Please specify the purpose of requesting the document.");
+            } else {
+                model.setOthPurpose(model.getOthPurpose().trim().toUpperCase());
+            }
+        }else{
+            model.setOthPurpose(null);
         }
 
         if (model.getStatus()==null) {
@@ -62,11 +81,35 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
             model.setDateRequested(new Date());
         }
 
-        if (userId!=null) model.setUserId(userId);
+        if (userId!=null) {
+            model.setUserId(userId);
+            Optional<UsersModel> user = usersJDBCRepository.findById(userId);
+            if (user.isPresent()) {
+                model.setRequestor(user.get().getFullNm());
+                if (user.get().getBirthDt()!=null) {
+                    model.setBirthDt(user.get().getBirthDt());
+                    model.setBirthDtString(DateUtil.getDateStringWithFormat(user.get().getBirthDt(), DateFormatEnum.DT_FORMAT_1.getPattern()));
+                }
+                if (user.get().getGender()!=null) {
+                    model.setGender(user.get().getGender());
+                    model.setGenderString(GenderEnum.getGenderDscpFromKeyStr(user.get().getGender()));
+                }
+                if (user.get().getCivilStatusKey()!=null) {
+                    model.setCivilStatusKey(user.get().getCivilStatusKey());
+                    model.setCivilStatusString(CivilStatusEnum.getCivilStatusDescByKey(user.get().getCivilStatusKey()));
+                }
+                if (user.get().getMobileNo()!=null) {
+                    model.setMobileNo(user.get().getMobileNo());
+                }
+            }else{
+                errorList.add("Document request cannot proceed at this time.");
+            }
+        }
 
-        List<DocumentModel> list = documentJDBCRepository.findPendingRequestByUserIdAndKey(model.getUserId(), model.getDocumentType());
+        List<DocumentModel> list = documentJDBCRepository.findPendingRequestByUserIdAndKeys(model.getUserId(), model.getDocuCategoryKey(), model.getDocuSubCategoryKey());
         boolean hasExistingRequest = list.stream().anyMatch(doc -> SystemStatusEnum.PENDING.getKey().equals(doc.getStatus()));
-        if (hasExistingRequest) errorList.add("You still have a pending " + DocumentTypeEnum.getDescByKey(model.getDocumentType()) + " request.");
+        if (hasExistingRequest) errorList.add("You still have a pending " + DocumentCategoryEnum.getDocuCatDescByKey(model.getDocuCategoryKey()) + " - " + DocumentSubCatEnum.getDocuSubCatDescByKey(model.getDocuSubCategoryKey())
+                + " request.");
 
         if (!errorList.isEmpty()) throwErrorMessages(errorList);
 
@@ -78,44 +121,52 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
         DocumentModel modelObj = new DocumentModel(documentRequest);
         validateObj(modelObj, null);
 
-        Optional<UsersModel> usersModel = usersJDBCRepository.findById(modelObj.getUserId());
-        UsersModel user = usersModel.orElseGet(UsersModel::new);
-
-        if (user.getMobileNo() != null && user.getMobileNo().startsWith("0")) {
-            user.setFormattedMobileNo("+63" + user.getMobileNo().substring(1));
-        }
-
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("${BARANGAY_NAME}", "Paliparan III");
-        placeholders.put("${CITY}", "Dasmariñas City, Cavite");
-        placeholders.put("${RESIDENT_NAME}", "<strong>" + user.getFullNm() + "</strong>");
-        placeholders.put("${RESIDENT_ADDRESS}", "<strong>" + user.getHomeAddress() + "</strong>");
-        placeholders.put("${RESIDENCY_DATE}", "<strong>" + DateUtil.getDateStringWithFormat(user.getDateEnrolled(), DateFormatEnum.DT_FORMAT_1.getPattern()) + "</strong>");
-        placeholders.put("${PURPOSE}", "<strong>" + modelObj.getPurpose() + "</strong>");
-        placeholders.put("${DATE}", "<strong>" + DateUtil.getDateStringWithFormat(documentRequest.getDateRequested(), DateFormatEnum.DT_FORMAT_5.getPattern()) + "</strong>");
-
-
-        DocumentTypeEnum docType = DocumentTypeEnum.getByKey(modelObj.getDocumentType());
-        if (docType != null) {
-            modelObj.setHeader(replacePlaceholders(docType.getHeaderTemplate(), placeholders));
-            modelObj.setBody(replacePlaceholders(docType.getBodyTemplate(), placeholders));
-            modelObj.setFooter(replacePlaceholders(docType.getFooterTemplate(), placeholders));
-        }
-
         SmsModel sms = new SmsModel();
-        sms.setRecipient(user.getFormattedMobileNo());
-        sms.setMessage("Hi, " + user.getFirstNm() + "! Your " + modelObj.getDocumentTypeString() + " request has been submitted successfully.");
-        //smsService.sendSms(sms);
+
+        Optional<UsersModel> user = usersJDBCRepository.findById(documentRequest.getUserId());
+        if (user.isPresent()) {
+            modelObj.setRequestor(user.get().getFullNm());
+            if (user.get().getBirthDt()!=null) {
+                modelObj.setBirthDt(user.get().getBirthDt());
+                modelObj.setBirthDtString(DateUtil.getDateStringWithFormat(user.get().getBirthDt(), DateFormatEnum.DT_FORMAT_1.getPattern()));
+            }
+            if (user.get().getGender()!=null) {
+                modelObj.setGender(user.get().getGender());
+                modelObj.setGenderString(GenderEnum.getGenderDscpFromKeyStr(user.get().getGender()));
+            }
+            if (user.get().getCivilStatusKey()!=null) {
+                modelObj.setCivilStatusKey(user.get().getCivilStatusKey());
+                modelObj.setCivilStatusString(CivilStatusEnum.getCivilStatusDescByKey(user.get().getCivilStatusKey()));
+            }
+            if (user.get().getMobileNo()!=null) {
+                modelObj.setMobileNo(user.get().getMobileNo());
+            }
+
+            if (user.get().getMobileNo() != null && user.get().getMobileNo().startsWith("0")) {
+                user.get().setFormattedMobileNo("+63" + user.get().getMobileNo().substring(1));
+            }
+            sms.setRecipient(user.get().getFormattedMobileNo());
+            sms.setMessage("Hi, " + user.get().getFirstNm() + "! Your " + DocumentCategoryEnum.getDocuCatDescByKey(modelObj.getDocuCategoryKey()) + " - " + DocumentSubCatEnum.getDocuSubCatDescByKey(modelObj.getDocuSubCategoryKey()) + " request has been submitted successfully.");
+
+            if (user.get().getEmailAddress()!=null) {
+                emailService.sendSimpleEmailNotif(user.get().getEmailAddress(), LogsTypeEnum.DOCUMENT_REQUEST.getMainAction(), sms.getMessage());
+            }
+            //smsService.sendSms(sms);
+        }else{
+            throwErrorMessage("Document request cannot proceed at this time.");
+        }
 
         NotifLogsModel notifLogsModel = new NotifLogsModel();
         notifLogsModel.setRefNo(generateReferenceNumber(null));
         notifLogsModel.setUserId(modelObj.getUserId());
         notifLogsModel.setMessage(sms.getMessage());
-        notifLogsModel.setRecipient(user.getFullNm());
+        notifLogsModel.setRecipient(user.get().getFullNm());
         notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
         notifLogsModel.setSentDt(new Date());
-        notifLogsModel.setType(SmsTypeEnum.DOCUMENT_REQUEST.getKey());
+        notifLogsModel.setType(LogsTypeEnum.DOCUMENT_REQUEST.getKey());
         notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+        notifLogsModel.setOtherDetail(DocumentCategoryEnum.getDocuCatDescByKey(modelObj.getDocuCategoryKey()) + " - " + DocumentSubCatEnum.getDocuSubCatDescByKey(modelObj.getDocuSubCategoryKey()));
+        notifLogsModel.setMainActionStr(LogsTypeEnum.DOCUMENT_REQUEST.getMainAction());
         notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
 
         modelObj.setRefNo(notifLogsModel.getRefNo());
@@ -181,24 +232,23 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
 
             returnObj.setId(document.get().getId());
             returnObj.setUserId(document.get().getUserId());
-            returnObj.setPurpose(document.get().getPurpose());
-            returnObj.setDocumentType(document.get().getDocumentType());
-            returnObj.setDocumentTypeString(DocumentTypeEnum.getDescByKey(returnObj.getDocumentType()));
+
+            returnObj.setDocuCategoryKey(document.get().getDocuCategoryKey());
+            returnObj.setDocuSubCategoryKey(document.get().getDocuSubCategoryKey());
+            returnObj.setProcessFee(document.get().getProcessFee());
+            returnObj.setPurposeKey(document.get().getPurposeKey());
+            returnObj.setOthPurpose(document.get().getOthPurpose());
+            returnObj.setDocuCategoryKeyString(DocumentCategoryEnum.getDocuCatDescByKey(document.get().getDocuCategoryKey()));
+            returnObj.setDocuSubCategoryKeyString(DocumentSubCatEnum.getDocuSubCatDescByKey(document.get().getDocuSubCategoryKey()));
+            returnObj.setPurposeKeyString(DocumentPurposeEnum.getDocuPurposeDescByKey(document.get().getPurposeKey()));
+            returnObj.setProcessFeeString(NumberFormatterUtil.format(document.get().getProcessFee()));
+
             returnObj.setStatus(document.get().getStatus());
             returnObj.setStatusString(SystemStatusEnum.getDscpByKey(returnObj.getStatus()));
             returnObj.setRefNo(document.get().getRefNo());
             returnObj.setDateRequested(document.get().getDateRequested());
             returnObj.setDateRequestedString(DateUtil.getDateStringWithFormat(returnObj.getDateRequested(), DateFormatEnum.DT_FORMAT_12.getPattern()));
             returnObj.setRequestor(user.isPresent() ? user.get().getFullNm() : "");
-            returnObj.setHeader(document.get().getHeader());
-            String body = document.get().getBody();
-
-            body = body.replaceAll("\\d{2}/\\d{2}/\\d{4}",
-                    DateUtil.getDateStringWithFormat(new Date(), DateFormatEnum.DT_FORMAT_5.getPattern())
-            );
-            returnObj.setBody(body);
-
-            returnObj.setFooter(document.get().getFooter());
         }
         return returnObj;
     }
@@ -211,30 +261,43 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
 
         Optional<UsersModel> user = usersJDBCRepository.findById(request.getUserId());
 
-        String message = null;
-        if (document.getStatus().equals(SystemStatusEnum.PROCESSED.getKey())) {
-            message = "Hi, " + user.get().getFirstNm() + "! Your " + DocumentTypeEnum.getDescByKey(document.getDocumentType()) + " request with reference number " + document.getRefNo()
-                    + " has been processed and can now be claimed at barangay office. Thank you!";
+        if (user.isPresent()) {
+            String message;
+            String mainAction;
+            if (document.getStatus().equals(SystemStatusEnum.PROCESSED.getKey())) {
+                mainAction = "Processed";
+                message = "Hi, " + user.get().getFirstNm() + "! Your " + DocumentCategoryEnum.getDocuCatDescByKey(document.getDocuCategoryKey()) + " - " + DocumentSubCatEnum.getDocuSubCatDescByKey(document.getDocuSubCategoryKey()) + " request with reference number " + document.getRefNo()
+                        + " has been processed and can now be claimed at barangay office. Please ready a total amount of ₱"+ NumberFormatterUtil.format(document.getProcessFee()) + " for the processing fee. Thank you!";
+            }else{
+                mainAction = "Rejected";
+                message = "Hi, " + user.get().getFirstNm() + "! Your " + DocumentCategoryEnum.getDocuCatDescByKey(document.getDocuCategoryKey()) + " - " + DocumentSubCatEnum.getDocuSubCatDescByKey(document.getDocuSubCategoryKey()) + " request with reference number " + document.getRefNo()
+                        + " has been rejected and cannot be processed at the moment. You can follow-up with your request with the assigned barangay personnel. Thank you!";
+            }
+
+            if (user.get().getEmailAddress()!=null) {
+                emailService.sendSimpleEmailNotif(user.get().getEmailAddress(), "Document Request" + " - " + mainAction, message);
+            }
+
+            SmsModel sms = new SmsModel();
+            sms.setRecipient(user.get().getFormattedMobileNo());
+            sms.setMessage(message);
+            //smsService.sendSms(sms);
+
+            NotifLogsModel notifLogsModel = new NotifLogsModel();
+            notifLogsModel.setRefNo(generateReferenceNumber(null));
+            notifLogsModel.setUserId(user.get().getId());
+            notifLogsModel.setMessage(sms.getMessage());
+            notifLogsModel.setRecipient(user.get().getFullNm());
+            notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
+            notifLogsModel.setSentDt(new Date());
+            notifLogsModel.setType(LogsTypeEnum.DOCUMENT_REQUEST.getKey());
+            notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+            notifLogsModel.setOtherDetail((DocumentCategoryEnum.getDocuCatDescByKey(document.getDocuCategoryKey()) + " - " + DocumentSubCatEnum.getDocuSubCatDescByKey(document.getDocuSubCategoryKey())));
+            notifLogsModel.setMainActionStr(LogsTypeEnum.DOCUMENT_REQUEST.getDesc()+ " - " + mainAction);
+            notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
         }else{
-            message = "Hi, " + user.get().getFirstNm() + "! Your " + DocumentTypeEnum.getDescByKey(document.getDocumentType()) + " request with reference number " + document.getRefNo()
-                    + " has been rejected and cannot be processed at the moment. You can follow-up with your request with the assigned barangay personnel. Thank you!";
+            throwErrorMessage("An error occurred upon processing.");
         }
-
-        SmsModel sms = new SmsModel();
-        sms.setRecipient(user.get().getFormattedMobileNo());
-        sms.setMessage(message);
-        //smsService.sendSms(sms);
-
-        NotifLogsModel notifLogsModel = new NotifLogsModel();
-        notifLogsModel.setRefNo(generateReferenceNumber(null));
-        notifLogsModel.setUserId(user.get().getUserId());
-        notifLogsModel.setMessage(sms.getMessage());
-        notifLogsModel.setRecipient(user.get().getFullNm());
-        notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
-        notifLogsModel.setSentDt(new Date());
-        notifLogsModel.setType(SmsTypeEnum.DOCUMENT_REQUEST.getKey());
-        notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
-        notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
 
         return new DocumentReturnModel(document);
     }

@@ -19,6 +19,8 @@ public interface EnumService {
 
     InitializeEnumModel getResidentTypeList();
 
+    InitializeEnumModel getBrgyPositionList();
+
     InitializeEnumModel getAllResidentTypeList();
 
     InitializeEnumModel getYearlevelList();
@@ -32,4 +34,10 @@ public interface EnumService {
     InitializeEnumModel getChannelList();
 
     InitializeEnumModel getDocumentList();
+
+    InitializeEnumModel getPurposeKeyList();
+
+    InitializeEnumModel getDocuCategoryList();
+
+    InitializeEnumModel getDocuSubCatListByKey(Integer key);
 }

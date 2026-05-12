@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 public interface UsersService {
     Page<UsersReturnModel> searchUsers(MainSearchRequest searchResult, PageRequest pageRequest);
 
+    String createHouseholdForRegistration(EnrollmentRequest requestObj);
+
     UsersReturnModel validateEnrollment(EnrollmentRequest requestObj);
 
     UsersReturnModel saveEnrollment(EnrollmentRequest requestObj);

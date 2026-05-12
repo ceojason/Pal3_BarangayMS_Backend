@@ -58,6 +58,18 @@ public class UsersReturnModel {
     private Date lastLoginDt;
     private String lastLoginDtString;
 
+    ////////////// NEW FIELDS ////////////////
+    private String block;
+    private String lot;
+    private String street;
+    private String householdKey;
+    private String householdKeyDscp;
+    private Integer isHouseholdHead;
+    private String isHouseholdHeadString;
+    private Integer brgyPositionKey;
+    private String brgyPositionKeyString;
+    private String tempHouseholdForSave;
+
     public UsersReturnModel(UsersModel modelObj) {
         this.id = modelObj.getId();
         this.cd = modelObj.getCd();
@@ -94,6 +106,16 @@ public class UsersReturnModel {
         this.isRegisteredVoter = modelObj.getIsRegisteredVoter();
         this.isRegisteredVoterString = YesOrNoEnum.getDescByKey(isRegisteredVoter);
         this.refNo = modelObj.getRefNo();
+        this.block = modelObj.getBlock();
+        this.lot = modelObj.getLot();
+        this.street = modelObj.getStreet();
+        this.householdKey = modelObj.getHouseholdKey();
+        this.householdKeyDscp = modelObj.getHouseholdKeyDscp();
+        this.isHouseholdHead = modelObj.getIsHouseholdHead();
+        this.isHouseholdHeadString = YesOrNoEnum.getDescByKey(modelObj.getIsHouseholdHead());
+        this.brgyPositionKey = modelObj.getBrgyPositionKey();
+        this.brgyPositionKeyString = modelObj.getBrgyPositionKeyString();
+        this.tempHouseholdForSave = modelObj.getTempHouseholdForSave()!=null ? modelObj.getTempHouseholdForSave() : modelObj.getHouseholdDesc();
     }
 
 }

@@ -17,10 +17,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class DocumentJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements DocumentJDBCRepository {
@@ -63,16 +60,18 @@ public class DocumentJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implement
 
 
     @Override
-    public List<DocumentModel> findPendingRequestByUserIdAndKey(String userId, Integer key) {
+    public List<DocumentModel> findPendingRequestByUserIdAndKeys(String userId, Integer key1, Integer key2) {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("userId", userId);
-        map.addValue("documentType", key);
+        map.addValue("docuCategoryKey", key1);
+        map.addValue("docuSubCategoryKey", key2);
 
         StringBuilder query = new StringBuilder()
                 .append(" SELECT ").append(DbTableUtil.buildSelectClause2(DocumentModel.class))
                 .append(" FROM ").append(DbTableUtil.getTableNameWithAlias(DocumentModel.class))
                 .append(" WHERE ").append(tblNameAlias).append(".USER_ID = :userId ")
-                .append(" AND ").append(tblNameAlias).append(".DOCUMENT_TYPE = :documentType ")
+                .append(" AND ").append(tblNameAlias).append(".DOCU_CAT_KEY = :docuCategoryKey ")
+                .append(" AND ").append(tblNameAlias).append(".DOCU_SUBCAT_KEY = :docuSubCategoryKey ")
                 .append(" ORDER BY ").append(tblNameAlias).append(".DATE_REQUESTED DESC");
 
         return namedParameterJdbcTemplate.query(query.toString(), map, new BeanPropertyRowMapper<>(DocumentModel.class));
@@ -150,6 +149,30 @@ public class DocumentJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implement
                     }
                     if (fieldName.equals("suffix")) {
                         document.setSuffix((String) row.get(key));
+                    }
+                    if (fieldName.equals("block")) {
+                        document.setBlock((String) row.get(key));
+                    }
+                    if (fieldName.equals("lot")) {
+                        document.setLot((String) row.get(key));
+                    }
+                    if (fieldName.equals("street")) {
+                        document.setStreet((String) row.get(key));
+                    }
+                    if (fieldName.equals("phaseKey")) {
+                        document.setPhaseKey((Integer) row.get(key));
+                    }
+                    if (fieldName.equals("birthDt")) {
+                        document.setBirthDt((Date) row.get(key));
+                    }
+                    if (fieldName.equals("gender")) {
+                        document.setGender((String) row.get(key));
+                    }
+                    if (fieldName.equals("civilStatusKey")) {
+                        document.setCivilStatusKey((Integer) row.get(key));
+                    }
+                    if (fieldName.equals("mobileNo")) {
+                        document.setMobileNo((String) row.get(key));
                     }
                 }
             }
