@@ -19,5 +19,7 @@ public interface LoginJDBCRepository {
 
     int deleteByUserId(String userId);
 
+    Integer getActiveCount();
+
     int updateLoginDt(String userId);
 }

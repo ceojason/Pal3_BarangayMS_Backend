@@ -53,6 +53,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
             modelObj.setParamLabel4("No. of in-progress and pending reports");
 
             modelObj.setLogsList(notifLogsJDBCRepository.findRecentResidentLogs(null));
+            modelObj.setSystemActiveCount(loginJDBCRepository.getActiveCount());
         }
 
         if (SystemUserEnum.SYSTEM_USER.getKey().equals(roleKey)) {

@@ -28,5 +28,7 @@ public class DashboardReturnModel {
 
     private List<NotifLogsModel> logsList;
 
+    private Integer systemActiveCount;
+
     private List<AnnouncementModel> announcementList;
 }

@@ -1,5 +1,6 @@
 package com.javaguides.bms.jdbc.repository;
 
+import com.javaguides.bms.enums.SystemStatusEnum;
 import com.javaguides.bms.jdbc.repository.basejdbcrepository.BaseJDBCRepositoryImpl;
 import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.helper.DbTableUtil;
@@ -79,14 +80,23 @@ public class LoginJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements L
     }
 
     @Override
+    public Integer getActiveCount() {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("status", SystemStatusEnum.ACTIVE.getKey());
+        String sql = "SELECT COUNT(ID) FROM " + tblLogin + " WHERE LOGIN_STATUS =:status ";
+        return namedParameterJdbcTemplate.queryForObject(sql, map, Integer.class);
+    }
+
+    @Override
     public int updateLoginDt(String userId) {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("dt", new Date());
         map.addValue("userId", userId);
+        map.addValue("status", SystemStatusEnum.ACTIVE.getKey());
 
         StringBuilder sql = new StringBuilder()
                 .append("UPDATE ").append(tblLogin)
-                .append(" SET UPDATED_DT = :dt ")
+                .append(" SET UPDATED_DT = :dt, LOGIN_STATUS =:status ")
                 .append("WHERE USER_ID = :userId");
 
         return namedParameterJdbcTemplate.update(sql.toString(), map);
