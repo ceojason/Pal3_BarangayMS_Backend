@@ -141,10 +141,24 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
                 if (modelObj.getTempHouseholdForSave()==null) {
                     errorList.add("Household Description is required for household heads and cannot be emptied.");
                 }else{
-                    Optional<HouseholdModel> household = householdJDBCRepository.findDuplicateHousehold(modelObj.getTempUniqueKey());
-                    if (household.isPresent()) {
-                        errorList.add("Household under this address was already saved in the system and currently have a head. If you wish to proceed, you must update the existing household's status to Inactive.");
-                        throwErrorMessages(errorList);
+                    List<HouseholdModel> hhList = householdJDBCRepository.findDuplicateHouseholdList(modelObj.getTempUniqueKey());
+                    boolean hasAnExistingActiveHousehold = false;
+                    if (hhList!=null && !hhList.isEmpty()) {
+                        for (HouseholdModel hh : hhList) {
+                            if (hh.getStatus().equals(SystemStatusEnum.ACTIVE.getKey())) {
+                                hasAnExistingActiveHousehold = true;
+                                break;
+                            }
+                        }
+                        if (hasAnExistingActiveHousehold) {
+                            if (hhList.size()>1) {
+                                errorList.add("There are multiple household saved in this address and one is currently on Active status. If you wish to proceed, you must update it to Inactive.");
+                                throwErrorMessages(errorList);
+                            }else{
+                                errorList.add("Household under this address was already saved in the system and currently have a head. If you wish to proceed, you must update the existing household's status to Inactive.");
+                                throwErrorMessages(errorList);
+                            }
+                        }
                     }
                 }
             }else{
@@ -299,10 +313,16 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
         loginJDBCRepository.saveLoginCreds(loginCreds);
 
+        String msg = "Hi, " + modelObj.getFirstNm()  + "! You have been successfully registered in Barangay eConnect System! Below are your temporary credentials.\n\n User ID: " + defaultCd + ", Password: " + defaultPass;
+
         SmsModel sms = new SmsModel();
         sms.setRecipient(modelObj.getFormattedMobileNo());
-        sms.setMessage("Hi, " + modelObj.getFirstNm()  + "! User ID: " + defaultCd + ", Password: " + defaultPass);
+        sms.setMessage(msg);
         smsService.sendSms(sms);
+
+        if (modelObj.getEmailAddress() != null) {
+            emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(), "User Registration", msg);
+        }
 
         //saving notif logs
         NotifLogsModel notifLogsModel = new NotifLogsModel();
@@ -491,16 +511,6 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
             if (requestObj.getEmailAddress()!=null) {
                 emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(), "Reset User Confirmation", msg);
-                notifLogsModel = new NotifLogsModel();
-                notifLogsModel.setRefNo(generateReferenceNumber(null));
-                notifLogsModel.setUserId(modelObj.getId());
-                notifLogsModel.setMessage(sms.getMessage());
-                notifLogsModel.setRecipient(modelObj.getFullNm());
-                notifLogsModel.setIsSmsEmail(YesOrNoEnum.NO.getKey());
-                notifLogsModel.setSentDt(new Date());
-                notifLogsModel.setType(LogsTypeEnum.RESET_USER.getKey());
-                notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
-                notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
             }
         }
 

@@ -1,6 +1,10 @@
 package com.javaguides.bms.enums;
 
+import com.javaguides.bms.helper.KeyValueModel;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 public enum SystemStatusEnum {
@@ -15,7 +19,9 @@ public enum SystemStatusEnum {
     NOT_SENT(7, "Sent error", true),
     PENDING(8, "Pending", true),
     PROCESSED(9, "Processed", true),
-    REJECTED(10, "Rejected", true)
+    REJECTED(10, "Rejected", true),
+    IN_PROGRESS(11, "In Progress", true),
+    CLOSED(12, "Closed", true)
     ;
 
     private final Integer key;
@@ -26,6 +32,20 @@ public enum SystemStatusEnum {
         this.key = key;
         this.dscp = dscp;
         this.hasAccessToSystem = hasAccessToSystem;
+    }
+
+    public static List<KeyValueModel> getStatusListForCommReport() {
+        List<KeyValueModel> list = new ArrayList<>();
+        list.add(new KeyValueModel(IN_PROGRESS.key, IN_PROGRESS.dscp));
+        list.add(new KeyValueModel(CLOSED.key, CLOSED.dscp));
+        return list;
+    }
+
+    public static List<KeyValueModel> getStatusListForHousehold() {
+        List<KeyValueModel> list = new ArrayList<>();
+        list.add(new KeyValueModel(ACTIVE.getKey(), ACTIVE.getDscp()));
+        list.add(new KeyValueModel(INACTIVE.getKey(), INACTIVE.getDscp()));
+        return list;
     }
 
     public static String getDscpByKey(Integer key) {

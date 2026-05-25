@@ -40,6 +40,8 @@ public final class StringMessagesUtil {
     public static final String RESIDENT = "Resident";
     public static final String ANNOUNCEMENT = "Announcement";
     public static final String ANNOUNCEMENTS = "Announcements";
+    public static final String COMM_REPORT = "Community Report";
+    public static final String HOUSEHOLD = "Household";
 
 
     ///////////////////////////////////////////////////////////////////////

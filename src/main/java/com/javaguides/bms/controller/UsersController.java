@@ -21,9 +21,7 @@ public class UsersController {
 
     @PostMapping("/search")
     public ApiResponseModel search(@RequestBody MainSearchRequest searchRequest) {
-        return new ApiResponseModel(
-                usersService.searchUsers(searchRequest, searchRequest.getPageRequest())
-        );
+        return new ApiResponseModel(usersService.searchUsers(searchRequest, searchRequest.getPageRequest()));
     }
 
     @PostMapping("/validateEnrollment")

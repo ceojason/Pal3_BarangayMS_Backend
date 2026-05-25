@@ -34,4 +34,9 @@ public class InitializeEnumModel {
     List<KeyValueModel> purposeKeyList;
     List<KeyValueModel> docuCategoryList;
     List<KeyValueModel> docuSubCategoryList;
+    List<KeyValueModel> reportTypeList;
+    List<KeyValueModel> reportPriorityList;
+
+    List<KeyValueModel> statusListForCommReport;
+    List<KeyValueModel> statusListForHousehold;
 }

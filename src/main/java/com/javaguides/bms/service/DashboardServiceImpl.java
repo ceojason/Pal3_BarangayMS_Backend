@@ -27,6 +27,7 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
     private LoginJDBCRepository loginJDBCRepository;
     private DocumentJDBCRepository documentJDBCRepository;
     private NotifLogsJDBCRepository notifLogsJDBCRepository;
+    private CommReportJDBCRepository commReportJDBCRepository;
 
     @Override
     public DashboardReturnModel getDashboardData(Integer roleKey, String userId) {
@@ -46,6 +47,10 @@ public class DashboardServiceImpl extends BaseServiceImpl implements DashboardSe
             // getting pending requests
             modelObj.setParamCount3(documentJDBCRepository.getCount().toString());
             modelObj.setParamLabel3("No. of pending requests");
+
+            // getting pending requests
+            modelObj.setParamCount4(commReportJDBCRepository.getCount().toString());
+            modelObj.setParamLabel4("No. of in-progress and pending reports");
 
             modelObj.setLogsList(notifLogsJDBCRepository.findRecentResidentLogs(null));
         }

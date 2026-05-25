@@ -1,12 +1,12 @@
 package com.javaguides.bms.controller;
 
 import com.javaguides.bms.helper.ApiResponseModel;
+import com.javaguides.bms.jdbc.repository.UsersJDBCRepository;
+import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
+import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.service.HouseholdService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/household")
@@ -20,4 +20,18 @@ public class HouseholdController {
         return new ApiResponseModel(householdService.findAllActiveHouseholdForRegistration(block, lot, phaseKey));
     }
 
+    @PostMapping("/search")
+    public ApiResponseModel search(@RequestBody MainSearchRequest searchRequest) {
+        return new ApiResponseModel(householdService.search(searchRequest, searchRequest.getPageRequest()));
+    }
+
+    @GetMapping("/findMembersById/{id}")
+    public ApiResponseModel findMembersById(@PathVariable String id) {
+        return new ApiResponseModel(householdService.findMembersById(id));
+    }
+
+    @PostMapping("/update")
+    public ApiResponseModel update(@RequestBody EnrollmentRequest requestObj) {
+        return new ApiResponseModel(householdService.update(requestObj));
+    }
 }

@@ -71,6 +71,26 @@ public class EnumController {
         return new ApiResponseModel(enumService.getGenderListStr());
     }
 
+    @GetMapping("/getPriorityList")
+    public ApiResponseModel getPriorityList() {
+        return new ApiResponseModel(enumService.getPriorityList());
+    }
+
+    @GetMapping("/getStatusListForCommReport")
+    public ApiResponseModel getStatusListForCommReport() {
+        return new ApiResponseModel(enumService.getStatusListForCommReport());
+    }
+
+    @GetMapping("/getStatusListForHousehold")
+    public ApiResponseModel getStatusListForHousehold() {
+        return new ApiResponseModel(enumService.getStatusListForHousehold());
+    }
+
+    @GetMapping("/getReportTypeList")
+    public ApiResponseModel getCommReportTypeList() {
+        return new ApiResponseModel(enumService.getCommReportTypeList());
+    }
+
     @GetMapping("/getCivilStatusList")
     public ApiResponseModel getCivilStatusList() {
         return new ApiResponseModel(enumService.getCivilStatusList());

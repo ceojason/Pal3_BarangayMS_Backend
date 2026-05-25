@@ -36,6 +36,34 @@ public class EnumServiceImpl implements EnumService {
     }
 
     @Override
+    public InitializeEnumModel getPriorityList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setReportPriorityList(PriorityEnum.getPriorityList());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getStatusListForCommReport() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setStatusListForCommReport(SystemStatusEnum.getStatusListForCommReport());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getStatusListForHousehold() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setStatusListForHousehold(SystemStatusEnum.getStatusListForHousehold());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getCommReportTypeList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setReportTypeList(CommReportTypeEnum.getCommReportTypeList());
+        return enumModel;
+    }
+
+    @Override
     public InitializeEnumModel getCivilStatusList() {
         InitializeEnumModel enumModel = new InitializeEnumModel();
         enumModel.setCivilStatusList(CivilStatusEnum.getCivilStatusList());

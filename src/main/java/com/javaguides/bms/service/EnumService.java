@@ -11,6 +11,14 @@ public interface EnumService {
 
     InitializeEnumModel getGenderListStr();
 
+    InitializeEnumModel getPriorityList();
+
+    InitializeEnumModel getStatusListForCommReport();
+
+    InitializeEnumModel getStatusListForHousehold();
+
+    InitializeEnumModel getCommReportTypeList();
+
     InitializeEnumModel getCivilStatusList();
 
     InitializeEnumModel getPhaseList();

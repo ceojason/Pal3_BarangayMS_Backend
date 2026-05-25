@@ -10,20 +10,25 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // allow all endpoints
-                .allowedOrigins("http://localhost:5173") // allow your React app origin
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
                 .allowCredentials(true);
     }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:uploads/");
 
-        registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/")
-                .resourceChain(true);
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(
+                        "file:C:/Dev Works/Pal3_BarangayMS_Backend/uploads/"
+                );
+
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations(
+                        "file:C:/Dev Works/Pal3_BarangayMS_Backend/uploads/images/"
+                );
     }
 
 }

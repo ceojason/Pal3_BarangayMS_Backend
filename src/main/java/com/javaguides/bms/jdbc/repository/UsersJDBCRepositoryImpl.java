@@ -195,6 +195,13 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
     }
 
     @Override
+    public List<UsersModel> findAllBrgyOfficials() {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        String sql = " SELECT * FROM " + DbTableUtil.getTableName(UsersModel.class) + " WHERE BRGY_POSITION_KEY IS NOT NULL";
+        return namedParameterJdbcTemplate.query(sql, map, new BeanPropertyRowMapper<>(UsersModel.class));
+    }
+
+    @Override
     public Optional<UsersModel> findById(String id) {
         return super.findById(id, tblUsers, UsersModel.class);
     }
@@ -207,6 +214,28 @@ public class UsersJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements U
         StringBuilder sql = new StringBuilder()
                 .append(" DELETE FROM ").append(tblUsers).append(" WHERE ").append(" ID = :id ");
         return namedParameterJdbcTemplate.update(sql.toString(), map);
+    }
+
+    @Override
+    public int updateIsHouseholdHeadById(String id, Integer value) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("id", id);
+        map.addValue("value", value);
+
+        StringBuilder qry = new StringBuilder()
+                .append(" UPDATE ").append(tblUsers).append(" SET IS_HOUSEHOLD_HEAD =:value ")
+                .append(" WHERE ID =:id ");
+        return namedParameterJdbcTemplate.update(qry.toString(), map);
+    }
+
+    @Override
+    public List<UsersModel> findByHouseholdKeys(List<String> keys) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("keys", keys);
+
+        String sql = " SELECT * FROM " + DbTableUtil.getTableName(UsersModel.class)
+                + " WHERE HOUSEHOLD_KEY IN (:keys) ";
+        return namedParameterJdbcTemplate.query(sql, map, new BeanPropertyRowMapper<>(UsersModel.class));
     }
 
     @Override

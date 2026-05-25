@@ -20,9 +20,16 @@ public interface UsersJDBCRepository {
 
     List<UsersModel> findAllUsersByClassificationKeys(List<Integer> keys);
 
+    List<UsersModel> findAllBrgyOfficials();
+
     Optional<UsersModel> findById(String id);
 
     int deleteById(String id);
+
+
+    int updateIsHouseholdHeadById(String id, Integer value);
+
+    List<UsersModel> findByHouseholdKeys(List<String> ids);
 
     UsersModel findUserInResetNoSession(MainSearchRequest searchRequest);
 }

@@ -14,8 +14,9 @@ public enum LogsTypeEnum {
     ALARM_WARNING_SMS(2, "Alarm/Warning", null, null),
     RESET_USER(3, "Reset User", null, null),
     DOCUMENT_REQUEST(4, "Document Request", "New Document Request", null),
-    INCIDENT_REPORT(5, "Incident Report", "New Incident Report", "Incident Report - Processed"),
-    MY_PROFILE_UPDATE(6, "My Profile Update", null, null)
+    COMM_REPORT(5, "Community Report", "New Community Report", "Community Report - Processed"),
+    MY_PROFILE_UPDATE(6, "My Profile Update", null, null),
+    HOUSEHOLD_UPDATE(7, "Household Detail Update", "Household Detail Update", "Household Head Update")
     ;
     private final Integer key;
     private final String desc;
@@ -32,14 +33,14 @@ public enum LogsTypeEnum {
     public static List<Integer> residentLogKeys() {
         List<Integer> keys = new ArrayList<>();
         keys.add(DOCUMENT_REQUEST.key);
-        keys.add(INCIDENT_REPORT.key);
+        keys.add(COMM_REPORT.key);
         keys.add(MY_PROFILE_UPDATE.key);
         return keys;
     }
 
     public static List<KeyValueModel> getTypeList() {
         List<KeyValueModel> list = new ArrayList<>();
-        List<Integer> keysToRemove = List.of(NEW_USER_SMS.key, RESET_USER.key, DOCUMENT_REQUEST.key);
+        List<Integer> keysToRemove = List.of(NEW_USER_SMS.key, RESET_USER.key, DOCUMENT_REQUEST.key, COMM_REPORT.key, MY_PROFILE_UPDATE.key);
         for (LogsTypeEnum val : values()) {
             if (!keysToRemove.contains(val.getKey())) list.add(new KeyValueModel(val.getKey(), val.getDesc()));
         }

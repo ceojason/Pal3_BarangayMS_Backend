@@ -1,7 +1,9 @@
 package com.javaguides.bms.model;
 
 import com.javaguides.bms.customannotations.TableAlias;
+import com.javaguides.bms.enums.BrgyPositionEnum;
 import com.javaguides.bms.enums.DateFormatEnum;
+import com.javaguides.bms.enums.PhaseEnum;
 import com.javaguides.bms.enums.ResidentClassificationEnum;
 import com.javaguides.bms.helper.DateUtil;
 import com.javaguides.bms.model.basemodel.BaseModel;
@@ -160,7 +162,8 @@ public class UsersModel extends BaseModel {
         StringBuilder address = new StringBuilder();
         if (block!=null) address.append(block).append(" ");
         if (lot!=null) address.append(lot).append(" ");
-        if (street!=null) address.append(street);
+        if (street!=null) address.append(street).append(" ");
+        if (phaseKey!=null) address.append(PhaseEnum.getDesc2ByKey(phaseKey)).append(" ");
 
         if (appendDefaultAddressString) {
             address.append(defaultBrgyNmCityAndProv).append(" ");
@@ -224,6 +227,11 @@ public class UsersModel extends BaseModel {
                     .append(suffix);
         }
         return fullNm.toString();
+    }
+
+    public String getFullNmWithPosition() {
+        String position = brgyPositionKey!=null ? " - " + BrgyPositionEnum.getDescByKey(brgyPositionKey) : "";
+        return getFullNm() + position;
     }
 
     public String getFullNm2() {

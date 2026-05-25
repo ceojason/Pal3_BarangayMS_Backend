@@ -2,17 +2,22 @@ package com.javaguides.bms.jdbc.repository;
 
 import com.javaguides.bms.enums.YesOrNoEnum;
 import com.javaguides.bms.helper.DbTableUtil;
+import com.javaguides.bms.helper.GenericRowMapper;
 import com.javaguides.bms.jdbc.repository.basejdbcrepository.BaseJDBCRepositoryImpl;
 import com.javaguides.bms.model.HouseholdModel;
 import com.javaguides.bms.model.UsersModel;
+import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import java.lang.reflect.Field;
+import java.util.*;
 
 @Repository
 public class HouseholdJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implements HouseholdJDBCRepository {
@@ -36,6 +41,12 @@ public class HouseholdJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
     }
 
     @Override
+    public int update(HouseholdModel modelObj) {
+        modelObj.setUpdatedDt(new Date());
+        return super.update(modelObj);
+    }
+
+    @Override
     public Optional<HouseholdModel> findDuplicateHousehold(String uniqKey) {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("uniqKey", uniqKey);
@@ -50,6 +61,156 @@ public class HouseholdJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<HouseholdModel> findDuplicateHouseholdList(String uniqKey) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("uniqKey", uniqKey);
+
+        StringBuilder sql = new StringBuilder()
+                .append(" SELECT * ").append(" FROM ").append(tblHousehold)
+                .append(" WHERE HOUSEHOLD_UNIQ_KEY = :uniqKey ");
+
+        return namedParameterJdbcTemplate.query(sql.toString(), map, new BeanPropertyRowMapper<>(HouseholdModel.class));
+    }
+
+    @Override
+    public Page<HouseholdModel> search(MainSearchRequest requestObj, PageRequest page) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        List<HouseholdModel> list = new ArrayList<>();
+        StringBuilder whereClause = createWhereClause(requestObj, map);
+        whereClause.append(getOrderBy(page, HouseholdModel.class));
+
+        Integer count = namedParameterJdbcTemplate.queryForObject(countQry(whereClause), map, Integer.class);
+        if (count!=null && count>0) {
+            list = mapResultToHouseholdModel(namedParameterJdbcTemplate.query(selectQry(whereClause), map, new GenericRowMapper()));
+        }else{
+            count=0;
+        }
+        return new PageImpl<>(list, page, count);
+    }
+
+    public List<HouseholdModel> mapResultToHouseholdModel(List<Map<String, Object>> list) {
+        List<HouseholdModel> requestList = new ArrayList<>();
+        for (Map<String, Object> row : list) {
+            HouseholdModel household = new HouseholdModel();
+            for (Map.Entry<String, Object> entry : row.entrySet()) {
+                String key = entry.getKey();
+                if (key.startsWith("th_")) {
+                    String fieldName = key.substring(3);
+                    try {
+                        Field field = getField(HouseholdModel.class, fieldName);
+                        field.setAccessible(true);
+                        field.set(household, entry.getValue());
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (key.startsWith("tu_")) {
+                    String fieldName = key.substring(3);
+                    if (fieldName.equals("id")) {
+                        household.setUserId((String) row.get(key));
+                    }
+                    if (fieldName.equals("firstNm")) {
+                        household.setFirstNm((String) row.get(key));
+                    }
+                    if (fieldName.equals("middleNm")) {
+                        household.setMiddleNm((String) row.get(key));
+                    }
+                    if (fieldName.equals("lastNm")) {
+                        household.setLastNm((String) row.get(key));
+                    }
+                    if (fieldName.equals("suffix")) {
+                        household.setSuffix((String) row.get(key));
+                    }
+                    if (fieldName.equals("block")) {
+                        household.setBlock((String) row.get(key));
+                    }
+                    if (fieldName.equals("lot")) {
+                        household.setLot((String) row.get(key));
+                    }
+                    if (fieldName.equals("street")) {
+                        household.setStreet((String) row.get(key));
+                    }
+                    if (fieldName.equals("phaseKey")) {
+                        household.setPhaseKey((Integer) row.get(key));
+                    }
+                    if (fieldName.equals("status")) {
+                        household.setUserStatus((Integer) row.get(key));
+                    }
+                }
+            }
+            requestList.add(household);
+        }
+
+        return requestList;
+    }
+
+    private String countQry(StringBuilder whereClause) {
+        StringBuilder query = new StringBuilder()
+                .append( " SELECT ").append(count()).append(" FROM ")
+                .append(DbTableUtil.getTableNameWithAlias(HouseholdModel.class))
+                .append(" LEFT JOIN ").append(DbTableUtil.getTableNameWithAlias(UsersModel.class))
+                .append(" ON ").append(tblUsersAlias).append(".HOUSEHOLD_KEY = ").append(tblHouseholdAlias).append(".ID ")
+                .append(whereClause);
+        return query.toString();
+    }
+
+    private String selectQry(StringBuilder whereClause) {
+        StringBuilder query = new StringBuilder()
+                .append(" SELECT ").append(DbTableUtil.buildSelectClause(HouseholdModel.class)).append(", ")
+                .append(DbTableUtil.buildSelectClause(UsersModel.class))
+                .append(" FROM ").append(DbTableUtil.getTableNameWithAlias(HouseholdModel.class))
+                .append(" LEFT JOIN ").append(DbTableUtil.getTableNameWithAlias(UsersModel.class))
+                .append(" ON ")
+                .append(tblUsersAlias).append(".HOUSEHOLD_KEY = ")
+                .append(tblHouseholdAlias).append(".ID ")
+                .append(whereClause);
+        return query.toString();
+    }
+
+    private StringBuilder createWhereClause(MainSearchRequest request, MapSqlParameterSource map) {
+        StringBuilder where = new StringBuilder();
+        List<String> conditions = new ArrayList<>();
+
+        if (request.getRequestor() != null && !request.getRequestor().isEmpty()) {
+            String recipientParam = "%" + request.getRequestor().trim().toUpperCase() + "%";
+            map.addValue("recipient", recipientParam);
+
+            conditions.add("("
+                    + tblUsersAlias + ".FIRST_NM LIKE :recipient OR "
+                    + tblUsersAlias + ".MIDDLE_NM LIKE :recipient OR "
+                    + tblUsersAlias + ".LAST_NM LIKE :recipient"
+                    + ")");
+        }
+
+        if (request.getRefNo()!=null && !request.getRefNo().isEmpty()) {
+            map.addValue("refNo", request.getRefNo().trim());
+            conditions.add(tblHouseholdAlias + ".REF_NO = :refNo");
+        }
+
+        if (request.getUserId()!=null) {
+            map.addValue("userId", request.getUserId());
+            conditions.add(tblHouseholdAlias + ".USER_ID = :userId");
+        }else{
+            map.addValue("isHouseholdHead", YesOrNoEnum.YES.getKey());
+            conditions.add(tblUsersAlias + ".IS_HOUSEHOLD_HEAD =:isHouseholdHead ");
+//            if (request.getIsPending()!=null && request.getIsPending().equals(YesOrNoEnum.YES.getBooleanVal())) {
+//                map.addValue("status", SystemStatusEnum.REJECTED.getKey());
+//                conditions.add(tblHouseholdAlias + ".STATUS != :status");
+//            }else{
+//                map.addValue("status", SystemStatusEnum.REJECTED.getKey());
+//                conditions.add(tblHouseholdAlias + ".STATUS = :status");
+//            }
+        }
+
+        if (!conditions.isEmpty()) {
+            where.append(" WHERE ").append(String.join(" AND ", conditions));
+        }
+
+        return where;
     }
 
     @Override

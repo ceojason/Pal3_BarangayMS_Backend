@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
@@ -73,6 +74,22 @@ public class EnrollmentRequest {
 
     private Integer isHouseholdHead;
     private String tempHouseholdForSave;
+
+    private List<MultipartFile> attachments;
+    private Integer reportTypeKey;
+    private Integer happensNearOrInHousehold;
+    private String description;
+    private String remarks;
+    private String userId;
+    private Integer priority;
+    private String othTitle;
+    private List<String> attachmentUrls;
+
+    public String householdDesc;
+    public String householdUniqKey;
+
+    private String assigneeId;
+    private Date createdDt;
 
     private Boolean hasNoSession;
 }
