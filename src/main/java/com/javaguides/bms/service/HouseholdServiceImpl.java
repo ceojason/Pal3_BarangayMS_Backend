@@ -199,6 +199,39 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
                 temp.setStatus(tempStatus);
                 temp.setCreatedDt(hh.getCreatedDt());
                 householdJDBCRepository.update(temp);
+
+                List<UsersModel> members = usersJDBCRepository.findByHouseholdKeys(List.of(hh.getId()));
+                if (members!=null && !members.isEmpty()) {
+                    UsersModel head = members.stream().filter(u -> YesOrNoEnum.YES.getKey().equals(u.getIsHouseholdHead()))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (head!=null) {
+                        NotifLogsModel notifLogsModel = new NotifLogsModel(); //saving notif logs
+                        notifLogsModel.setRefNo(generateReferenceNumber(null));
+                        notifLogsModel.setUserId(head.getUserId());
+                        notifLogsModel.setMessage("Hi, " + head.getFirstNm() + "! Your household was set to " + SystemStatusEnum.getDscpByKey(tempStatus) + ".");
+                        notifLogsModel.setRecipient(head.getFullNm());
+                        notifLogsModel.setIsSmsEmail(head.getEmailAddress()!=null ? ChannelEnum.ALL.getKey() : ChannelEnum.SMS.getKey());
+                        notifLogsModel.setSentDt(new Date());
+                        notifLogsModel.setType(LogsTypeEnum.HOUSEHOLD_UPDATE.getKey());
+                        notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+                        notifLogsModel.setOtherDetail(LogsTypeEnum.HOUSEHOLD_UPDATE.getDesc() + " - " + SystemStatusEnum.getDscpByKey(tempStatus));
+                        notifLogsModel.setMainActionStr(LogsTypeEnum.HOUSEHOLD_UPDATE.getMainAction());
+                        notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+
+                        String msg = "Hi, " + head.getFirstNm() + "! Your household was set to " + SystemStatusEnum.getDscpByKey(tempStatus) + ".";
+
+                        SmsModel sms = new SmsModel();
+                        sms.setRecipient(head.getFormattedMobileNo());
+                        sms.setMessage(msg);
+                        smsService.sendSms(sms);
+
+                        if (head.getEmailAddress()!=null) {
+                            emailService.sendSimpleEmailNotif(head.getEmailAddress(), "Household Detail Update", msg);
+                        }
+                    }
+                }
             }
         }
 
