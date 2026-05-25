@@ -106,6 +106,16 @@ public class EnumController {
         return new ApiResponseModel(enumService.getYesNoList());
     }
 
+    @GetMapping("/getConfigList")
+    public ApiResponseModel getConfigList() {
+        return new ApiResponseModel(enumService.getConfigList());
+    }
+
+    @GetMapping("/getRegionList")
+    public ApiResponseModel getRegionList() {
+        return new ApiResponseModel(enumService.getRegionList());
+    }
+
     @GetMapping("/getResidentTypeList")
     public ApiResponseModel getResidentTypeList() {
         return new ApiResponseModel(enumService.getResidentTypeList());

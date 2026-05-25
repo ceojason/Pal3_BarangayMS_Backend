@@ -74,6 +74,15 @@ public enum DocumentSubCatEnum {
         return list;
     }
 
+    public static Integer getCategoryByKey(Integer key) {
+        if (key!=null) {
+            for (DocumentSubCatEnum val : values()) {
+                if (key.equals(val.getKey())) return val.getCategoryKey();
+            }
+        }
+        return null;
+    }
+
     public static String getDocuSubCatDescByKey(Integer key) {
         if (key!=null) {
             for (DocumentSubCatEnum val : values()) {

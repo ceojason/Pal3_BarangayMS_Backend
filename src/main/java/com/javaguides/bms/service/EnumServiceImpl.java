@@ -86,6 +86,20 @@ public class EnumServiceImpl implements EnumService {
     }
 
     @Override
+    public InitializeEnumModel getConfigList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setSystemConfigList(SystemConfigEnum.configList());
+        return enumModel;
+    }
+
+    @Override
+    public InitializeEnumModel getRegionList() {
+        InitializeEnumModel enumModel = new InitializeEnumModel();
+        enumModel.setRegionList(RegionEnum.regionList());
+        return enumModel;
+    }
+
+    @Override
     public InitializeEnumModel getResidentTypeList() {
         InitializeEnumModel enumModel = new InitializeEnumModel();
         enumModel.setResidentTypeList(ResidentClassificationEnum.getResidentClassList());

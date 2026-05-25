@@ -25,6 +25,10 @@ public interface EnumService {
 
     InitializeEnumModel getYesNoList();
 
+    InitializeEnumModel getConfigList();
+
+    InitializeEnumModel getRegionList();
+
     InitializeEnumModel getResidentTypeList();
 
     InitializeEnumModel getBrgyPositionList();

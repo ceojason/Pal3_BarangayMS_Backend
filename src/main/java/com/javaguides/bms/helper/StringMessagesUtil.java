@@ -38,6 +38,7 @@ public final class StringMessagesUtil {
     public static final String BIRTHDAY = "Birthday";
     public static final String USER = "User";
     public static final String RESIDENT = "Resident";
+    public static final String PRICING = "Service Pricing";
     public static final String ANNOUNCEMENT = "Announcement";
     public static final String ANNOUNCEMENTS = "Announcements";
     public static final String COMM_REPORT = "Community Report";

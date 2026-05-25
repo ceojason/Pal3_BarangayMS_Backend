@@ -17,6 +17,8 @@ public class InitializeEnumModel {
     List<KeyValueModel> systemUserList;
     List<KeyValueModelStr> genderListStr;
     List<KeyValueModelStr> yearlevelList;
+    List<KeyValueModelStr> systemConfigList;
+    List<KeyValueModelStr> regionList;
     List<KeyValueModel> enrolleeTypeList;
     List<KeyValueModel> civilStatusList;
     List<KeyValueModel> phaseList;
