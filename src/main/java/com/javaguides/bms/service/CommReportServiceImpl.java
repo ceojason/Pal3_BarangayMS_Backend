@@ -315,7 +315,7 @@ public class CommReportServiceImpl extends BaseServiceImpl implements CommReport
 
         NotifLogsModel notifLogsModel = new NotifLogsModel(); //saving notif logs
         notifLogsModel.setRefNo(generateReferenceNumber(null));
-        notifLogsModel.setUserId(modelObj.getId());
+        notifLogsModel.setUserId(modelObj.getUserId());
         notifLogsModel.setMessage(sms.getMessage());
         notifLogsModel.setRecipient(requestor.get().getFullNm());
         notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
@@ -331,6 +331,7 @@ public class CommReportServiceImpl extends BaseServiceImpl implements CommReport
         }
 
         CommReportReturn returnObj = new CommReportReturn(modelObj);
+        returnObj.setAssigneeNmAndPosition(assignedAuth.map(UsersModel::getFullNmWithPosition).orElse(null));
         returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
                 StringMessagesUtil.UPDATED_SINGLE_SUFFIX,
                 StringMessagesUtil.COMM_REPORT
