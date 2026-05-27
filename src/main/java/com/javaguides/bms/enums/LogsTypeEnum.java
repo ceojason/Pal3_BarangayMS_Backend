@@ -12,7 +12,7 @@ public enum LogsTypeEnum {
     NEW_USER_SMS(0, "User Registration", "Resident - Registration", null),
     ANNOUNCEMENT_SMS(1, "Announcement", "Announcement - Sent", null),
     ALARM_WARNING_SMS(2, "Alarm/Warning", null, null),
-    RESET_USER(3, "Reset User", null, null),
+    RESET_USER(3, "Reset User", "Reset User", "Reset User - Successful"),
     DOCUMENT_REQUEST(4, "Document Request", "New Document Request", null),
     COMM_REPORT(5, "Community Report", "New Community Report", "Community Report - Processed"),
     MY_PROFILE_UPDATE(6, "My Profile Update", null, null),
@@ -36,6 +36,7 @@ public enum LogsTypeEnum {
         keys.add(DOCUMENT_REQUEST.key);
         keys.add(COMM_REPORT.key);
         keys.add(MY_PROFILE_UPDATE.key);
+        keys.add(RESET_USER.key);
         return keys;
     }
 

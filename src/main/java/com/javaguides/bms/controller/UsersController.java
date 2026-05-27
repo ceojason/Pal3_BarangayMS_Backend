@@ -2,6 +2,7 @@ package com.javaguides.bms.controller;
 
 import com.javaguides.bms.helper.ApiResponseModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
+import com.javaguides.bms.model.requestmodel.ResetUserRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.service.UsersService;
 import jakarta.servlet.http.HttpSession;
@@ -67,6 +68,11 @@ public class UsersController {
     @GetMapping("/{userId}")
     public ApiResponseModel findById(@PathVariable String userId) {
         return new ApiResponseModel(usersService.findByUserId(userId));
+    }
+
+    @PostMapping("/findUserByRequest")
+    public ApiResponseModel findUserByRequest(@RequestBody ResetUserRequest requestObj) {
+        return new ApiResponseModel(usersService.findUserByRequest(requestObj));
     }
 
     /* ===================== PROFILE IMAGE ===================== */

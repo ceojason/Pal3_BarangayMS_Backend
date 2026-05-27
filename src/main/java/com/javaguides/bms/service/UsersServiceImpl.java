@@ -6,8 +6,10 @@ import com.javaguides.bms.helper.KeyHasher;
 import com.javaguides.bms.helper.StringMessagesUtil;
 import com.javaguides.bms.jdbc.repository.*;
 import com.javaguides.bms.model.*;
+import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.basemodel.SmsModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
+import com.javaguides.bms.model.requestmodel.ResetUserRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.UsersReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
@@ -528,6 +530,67 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
+    public UsersReturnModel findUserByRequest(ResetUserRequest requestObj) {
+        UsersModel tempUser = new UsersModel();
+        List<String> errorList = new ArrayList<>();
+        if (requestObj.getFirstNm()==null){
+            errorList.add("First Name" + IS_REQUIRED_SUFFIX);
+        }else{
+            requestObj.setFirstNm(requestObj.getFirstNm().trim().toUpperCase());
+        }
+
+        if (requestObj.getLastNm()==null){
+            errorList.add("Last Name" + IS_REQUIRED_SUFFIX);
+        }else{
+            requestObj.setLastNm(requestObj.getLastNm().trim().toUpperCase());
+        }
+
+        if (requestObj.getMobileNo()==null) {
+            errorList.add("Mobile Number" + IS_REQUIRED_SUFFIX);
+        }else{
+            checkIfOnlyNumber(requestObj.getMobileNo(), "Mobile Number", errorList);
+            maxStringCharCounter(requestObj.getMobileNo(), 11, "Mobile Number", errorList);
+            minStringCharCounter(requestObj.getMobileNo(), 11, "Mobile Number", errorList);
+            String to = requestObj.getMobileNo();
+        }
+
+        if (!errorList.isEmpty()) throwErrorMessages(errorList);
+        MainSearchRequest sr = new MainSearchRequest();
+        sr.setFirstNm(requestObj.getFirstNm());
+        sr.setLastNm(requestObj.getLastNm());
+        sr.setMobileNo(requestObj.getMobileNo());
+
+        UsersModel modelObj = usersJDBCRepository.findUserInResetNoSession(sr);
+        boolean noUserFound = false;
+        if (modelObj==null || modelObj.getId()==null) {
+            noUserFound = true;
+        }else{
+            tempUser.setId(modelObj.getId());
+            tempUser.setFirstNm(modelObj.getFirstNm()!=null ? modelObj.getFirstNm() : null);
+            tempUser.setMiddleNm(modelObj.getMiddleNm()!=null ? modelObj.getMiddleNm() : null);
+            tempUser.setLastNm(modelObj.getLastNm()!=null ? modelObj.getLastNm() : null);
+            tempUser.setSuffix(modelObj.getSuffix()!=null ? modelObj.getSuffix() : null);
+            tempUser.setEmailAddress(modelObj.getEmailAddress()!=null ? modelObj.getEmailAddress() : null);
+        }
+
+        if (noUserFound) {
+            SystemAdminModel adminObj = systemAdminJDBCRepository.findUserInResetNoSession(sr); //check if the user is admin
+            if (adminObj!=null && adminObj.getId()!=null) {
+                noUserFound = false;
+                tempUser.setId(adminObj.getId());
+                tempUser.setFirstNm(adminObj.getFirstNm()!=null ? adminObj.getFirstNm() : null);
+                tempUser.setMiddleNm(adminObj.getMiddleNm()!=null ? adminObj.getMiddleNm() : null);
+                tempUser.setLastNm(adminObj.getLastNm()!=null ? adminObj.getLastNm() : null);
+                tempUser.setSuffix(adminObj.getSuffix()!=null ? adminObj.getSuffix() : null);
+                tempUser.setEmailAddress(adminObj.getEmailAddress()!=null ? adminObj.getEmailAddress() : null);
+            }
+        }
+
+        if (noUserFound) throwErrorMessage("No user was found.");
+        return new UsersReturnModel(tempUser);
+    }
+
+    @Override
     public UsersReturnModel resetNoSession(EnrollmentRequest requestObj) {
         List<String> errorList = new ArrayList<>();
         requestObj.setHasNoSession(true);
@@ -606,6 +669,8 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             loginObj.setCd(defaultCd);
             loginJDBCRepository.update(loginObj);
 
+            Optional<UsersModel> usersModel = usersJDBCRepository.findById(loginObj.getUserId());
+
             String msg = "Hi, " + modelObj.getFirstNm()  + "! Your account was successfully reset. User ID: " + defaultCd + ", Password: " + defaultPass;
             SmsModel sms = new SmsModel();
             sms.setRecipient(modelObj.getFormattedMobileNo());
@@ -614,13 +679,15 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
             NotifLogsModel notifLogsModel = new NotifLogsModel(); //saving notif logs
             notifLogsModel.setRefNo(generateReferenceNumber(null));
-            notifLogsModel.setUserId(modelObj.getId());
+            notifLogsModel.setUserId(usersModel.map(BaseModel::getId).orElse(null));
             notifLogsModel.setMessage(sms.getMessage());
             notifLogsModel.setRecipient(modelObj.getFullNm());
-            notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
+            notifLogsModel.setIsSmsEmail(ChannelEnum.ALL.getKey());
             notifLogsModel.setSentDt(new Date());
             notifLogsModel.setType(LogsTypeEnum.RESET_USER.getKey());
             notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+            notifLogsModel.setOtherDetail(LogsTypeEnum.RESET_USER.getMainAction());
+            notifLogsModel.setMainActionStr(LogsTypeEnum.RESET_USER.getSecAction());
             notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
 
             if (requestObj.getEmailAddress()!=null) {

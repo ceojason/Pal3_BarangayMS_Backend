@@ -1,6 +1,7 @@
 package com.javaguides.bms.service;
 
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
+import com.javaguides.bms.model.requestmodel.ResetUserRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.UsersReturnModel;
 import jakarta.servlet.http.HttpSession;
@@ -23,6 +24,8 @@ public interface UsersService {
     UsersReturnModel update(EnrollmentRequest requestObj);
 
     UsersReturnModel deleteUser(String userId);
+
+    UsersReturnModel findUserByRequest(ResetUserRequest requestObj);
 
     UsersReturnModel resetNoSession(EnrollmentRequest requestObj);
 
