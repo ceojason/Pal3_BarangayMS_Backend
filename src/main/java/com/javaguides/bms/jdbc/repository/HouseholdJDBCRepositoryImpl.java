@@ -152,22 +152,18 @@ public class HouseholdJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
         StringBuilder query = new StringBuilder()
                 .append( " SELECT ").append(count()).append(" FROM ")
                 .append(DbTableUtil.getTableNameWithAlias(HouseholdModel.class))
-                .append(" LEFT JOIN ").append(DbTableUtil.getTableNameWithAlias(UsersModel.class))
-                .append(" ON ").append(tblUsersAlias).append(".HOUSEHOLD_KEY = ").append(tblHouseholdAlias).append(".ID ")
                 .append(whereClause);
         return query.toString();
     }
 
     private String selectQry(StringBuilder whereClause) {
         StringBuilder query = new StringBuilder()
-                .append(" SELECT ").append(DbTableUtil.buildSelectClause(HouseholdModel.class)).append(", ")
-                .append(DbTableUtil.buildSelectClause(UsersModel.class))
-                .append(" FROM ").append(DbTableUtil.getTableNameWithAlias(HouseholdModel.class))
-                .append(" LEFT JOIN ").append(DbTableUtil.getTableNameWithAlias(UsersModel.class))
-                .append(" ON ")
-                .append(tblUsersAlias).append(".HOUSEHOLD_KEY = ")
-                .append(tblHouseholdAlias).append(".ID ")
+                .append(" SELECT ")
+                .append(DbTableUtil.buildSelectClause(HouseholdModel.class))
+                .append(" FROM ")
+                .append(DbTableUtil.getTableNameWithAlias(HouseholdModel.class))
                 .append(whereClause);
+
         return query.toString();
     }
 
@@ -195,8 +191,8 @@ public class HouseholdJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
             map.addValue("userId", request.getUserId());
             conditions.add(tblHouseholdAlias + ".USER_ID = :userId");
         }else{
-            map.addValue("isHouseholdHead", YesOrNoEnum.YES.getKey());
-            conditions.add(tblUsersAlias + ".IS_HOUSEHOLD_HEAD =:isHouseholdHead ");
+//            map.addValue("isHouseholdHead", YesOrNoEnum.YES.getKey());
+//            conditions.add(tblUsersAlias + ".IS_HOUSEHOLD_HEAD =:isHouseholdHead ");
 //            if (request.getIsPending()!=null && request.getIsPending().equals(YesOrNoEnum.YES.getBooleanVal())) {
 //                map.addValue("status", SystemStatusEnum.REJECTED.getKey());
 //                conditions.add(tblHouseholdAlias + ".STATUS != :status");
@@ -241,6 +237,37 @@ public class HouseholdJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
                 .append(" WHERE ")
                 .append(tblHouseholdAlias).append(".STATUS = :status AND ")
                 .append(tblUsersAlias).append(".IS_HOUSEHOLD_HEAD = :isHouseholdHead AND ")
+                .append(tblUsersAlias).append(".BLOCK = :block AND ")
+                .append(tblUsersAlias).append(".LOT = :lot AND ")
+                .append(tblUsersAlias).append(".PHASE_KEY = :phaseKey ")
+                ;
+
+        return namedParameterJdbcTemplate.query(qry.toString(), map, new BeanPropertyRowMapper<>(HouseholdModel.class));
+    }
+
+    @Override
+    public List<HouseholdModel> findHousehold(Integer status, String block, String lot, Integer phaseKey) {
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("status", status);
+        map.addValue("block", block);
+        map.addValue("lot", lot);
+        map.addValue("phaseKey", phaseKey);
+        //map.addValue("isHouseholdHead", YesOrNoEnum.YES.getKey());
+
+        StringBuilder qry = new StringBuilder()
+                .append(" SELECT ")
+                .append(tblHouseholdAlias).append(".*, ")
+                .append(tblUsersAlias).append(".FIRST_NM AS firstNm, ")
+                .append(tblUsersAlias).append(".MIDDLE_NM AS middleNm, ")
+                .append(tblUsersAlias).append(".LAST_NM AS lastNm, ")
+                .append(tblUsersAlias).append(".SUFFIX AS suffix ")
+                .append(" FROM ").append(tblHousehold).append(" ").append(tblHouseholdAlias)
+                .append(" INNER JOIN ")
+                .append(tblUsers).append(" ").append(tblUsersAlias).append(" ON ")
+                .append(tblHouseholdAlias).append(".ID = ").append(tblUsersAlias).append(".HOUSEHOLD_KEY ")
+                .append(" WHERE ")
+                //.append(tblHouseholdAlias).append(".STATUS = :status AND ")
+                //.append(tblUsersAlias).append(".IS_HOUSEHOLD_HEAD = :isHouseholdHead AND ")
                 .append(tblUsersAlias).append(".BLOCK = :block AND ")
                 .append(tblUsersAlias).append(".LOT = :lot AND ")
                 .append(tblUsersAlias).append(".PHASE_KEY = :phaseKey ")

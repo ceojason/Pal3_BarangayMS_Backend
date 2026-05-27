@@ -48,7 +48,7 @@ public class HouseholdReturnModel {
 
     public Integer getMemberCount() {
         if (members!=null && !members.isEmpty()) return members.size();
-        return null;
+        return 0;
     }
 
     public HouseholdReturnModel(HouseholdModel modelObj) {

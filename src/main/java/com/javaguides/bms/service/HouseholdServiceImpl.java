@@ -42,16 +42,16 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
 
     @Override
     public Page<HouseholdReturnModel> search(MainSearchRequest searchRequest, PageRequest pageRequest) {
-        Page<HouseholdModel> users = householdJDBCRepository.search(searchRequest, pageRequest);
+        Page<HouseholdModel> households = householdJDBCRepository.search(searchRequest, pageRequest);
         Map<String, List<UsersModel>> membersMap = new HashMap<>();
 
-        if (!users.isEmpty()) {
-            List<String> householdIds = users.stream().map(BaseModel::getId).toList();
+        if (!households.isEmpty()) {
+            List<String> householdIds = households.stream().map(BaseModel::getId).toList();
 
             if (!householdIds.isEmpty()) {
                 List<UsersModel> members = usersJDBCRepository.findByHouseholdKeys(householdIds);
 
-                if (members != null && !members.isEmpty()) {
+                if (members!=null && !members.isEmpty()) {
                     for (UsersModel u : members) {
                         membersMap.computeIfAbsent(u.getHouseholdKey(), m -> new ArrayList<>()).add(u);
                     }
@@ -59,23 +59,29 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
             }
         }
 
-        return users.map(household -> {
+        return households.map(household -> {
             HouseholdReturnModel returnObj = new HouseholdReturnModel(household);
-            returnObj.setMembers(membersMap.getOrDefault(household.getId(), Collections.emptyList()));
+            List<UsersModel> members =
+                    membersMap.getOrDefault(household.getId(), Collections.emptyList());
+
+            UsersModel householdHead = members.stream()
+                    .filter(m -> m.getIsHouseholdHead()!=null && m.getIsHouseholdHead()==0)
+                    .findFirst()
+                    .orElse(null);
+            returnObj.setUserId(householdHead!=null ? householdHead.getId() : null);
+            returnObj.setHouseholdHead(householdHead!=null ? householdHead.getFullNm() : null);
+            returnObj.setUserStatus(householdHead!=null ? householdHead.getStatus() : null);
+            if (returnObj.getUserStatus()!=null) returnObj.setUserStatusString(SystemStatusEnum.getDscpByKey(returnObj.getUserStatus()));
+            returnObj.setMembers(members);
+
             return returnObj;
         });
     }
 
     @Override
-    public List<KeyValueModelStr> findAllActiveHouseholdForRegistration(String block, String lot, Integer phaseKey) {
-        int status = SystemStatusEnum.ACTIVE.getKey();
-        if (block!=null) {
-            block = block.trim().toUpperCase();
-        }
-        if (lot!=null) {
-            lot = lot.trim().toUpperCase();
-        }
-        List<HouseholdModel> householdList = householdJDBCRepository.findHouseholdByHeadAndStatus(status, block, lot, phaseKey);
+    public List<KeyValueModelStr> findAllActiveHouseholdForRegistration(String block, String lot, String street, Integer phaseKey) {
+        //int status = SystemStatusEnum.ACTIVE.getKey();
+        List<HouseholdModel> householdList = householdJDBCRepository.findDuplicateHouseholdList(formatHouseholdUniqueKey(block, lot, street, phaseKey));
         List<KeyValueModelStr> returnList = new ArrayList<>();
         if (householdList!=null && !householdList.isEmpty()) {
             for (HouseholdModel modelObj : householdList) {
@@ -84,6 +90,27 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
             returnList.sort(Comparator.comparing(KeyValueModelStr::getValue));
         }
         return returnList;
+    }
+
+    public String formatHouseholdUniqueKey(String block, String lot, String street, Integer phaseKey) {
+        StringBuilder tempHousehold = new StringBuilder();
+        if (block!=null && !block.isEmpty()) {
+            tempHousehold.append("_")
+                    .append(block.trim().toUpperCase());
+        }
+        if (lot!=null && !lot.isEmpty()) {
+            tempHousehold.append("_")
+                    .append(lot.trim().toUpperCase());
+        }
+        if (street!=null && !street.isEmpty()) {
+            tempHousehold.append("_")
+                    .append(street.trim().toUpperCase());
+        }
+        if (phaseKey!=null) {
+            tempHousehold.append("_")
+                    .append(PhaseEnum.getDesc2ByKey(phaseKey));
+        }
+        return tempHousehold.toString();
     }
 
     @Override
@@ -142,23 +169,26 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
                 if (members!=null && !members.isEmpty()) {
                     oldHead = members.stream().filter(m -> m.getIsHouseholdHead().equals(YesOrNoEnum.YES.getKey())).findFirst().orElse(null);
 
-                    assert oldHead!=null;
-                    if (oldHead.getId()==null) {
-                        modelObj.getErrorList().add("Invalid household head!");
-                        throwErrorMessages(modelObj.getErrorList());
+                    if (oldHead==null || oldHead.getId()==null) {
+                        newHead = usersJDBCRepository.findById(modelObj.getUserId());
+                        if (newHead.isEmpty()) {
+                            throwErrorMessage("An error occurred upon assigning a new household head.");
+                        }
+                        hasChanges = true;
                     }
-                    if (oldHead.getId()!=null && !oldHead.getId().equals(modelObj.getUserId())) {
+                    if (oldHead!=null && oldHead.getId()!=null && !oldHead.getId().equals(modelObj.getUserId())) {
                         newHead = usersJDBCRepository.findById(modelObj.getUserId());
                         if (newHead.isEmpty()) {
                             throwErrorMessage("An error occurred upon assigning a new household head.");
                         }
                         hasChanges = true;
                     }else{
-                        newHead = Optional.empty();
+                        newHead = usersJDBCRepository.findById(modelObj.getUserId());
                     }
-                }else{
-                    modelObj.getErrorList().add("Invalid household. Transaction cannot be processed.");
                 }
+//                else{
+//                    modelObj.getErrorList().add("Invalid household. Transaction cannot be processed.");
+//                }
             }
         }
 
@@ -171,22 +201,24 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
         if (newHead.isPresent()) {
             usersJDBCRepository.updateIsHouseholdHeadById(newHead.get().getId(), YesOrNoEnum.YES.getKey());
 
-            if (oldHead.getId()!=null) {
+            if (oldHead!=null && oldHead.getId()!=null) {
                 usersJDBCRepository.updateIsHouseholdHeadById(oldHead.getId(), YesOrNoEnum.NO.getKey());
             }
         }else{
-            NotifLogsModel notifLogsModel = new NotifLogsModel(); //saving notif logs
-            notifLogsModel.setRefNo(generateReferenceNumber(null));
-            notifLogsModel.setUserId(oldHead.getUserId());
-            notifLogsModel.setMessage("Hi, " + oldHead.getFirstNm() + "! Your household was set to " + SystemStatusEnum.getDscpByKey(modelObj.getStatus()) + ".");
-            notifLogsModel.setRecipient(oldHead.getFullNm());
-            notifLogsModel.setIsSmsEmail(oldHead.getEmailAddress()!=null ? ChannelEnum.ALL.getKey() : ChannelEnum.SMS.getKey());
-            notifLogsModel.setSentDt(new Date());
-            notifLogsModel.setType(LogsTypeEnum.HOUSEHOLD_UPDATE.getKey());
-            notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
-            notifLogsModel.setOtherDetail(LogsTypeEnum.HOUSEHOLD_UPDATE.getDesc() + " - " + SystemStatusEnum.getDscpByKey(modelObj.getStatus()));
-            notifLogsModel.setMainActionStr(LogsTypeEnum.HOUSEHOLD_UPDATE.getMainAction());
-            notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+            if (oldHead!=null) {
+                NotifLogsModel notifLogsModel = new NotifLogsModel(); //saving notif logs
+                notifLogsModel.setRefNo(generateReferenceNumber(null));
+                notifLogsModel.setUserId(oldHead.getUserId());
+                notifLogsModel.setMessage("Hi, " + oldHead.getFirstNm() + "! Your household was set to " + SystemStatusEnum.getDscpByKey(modelObj.getStatus()) + ".");
+                notifLogsModel.setRecipient(oldHead.getFullNm());
+                notifLogsModel.setIsSmsEmail(oldHead.getEmailAddress()!=null ? ChannelEnum.ALL.getKey() : ChannelEnum.SMS.getKey());
+                notifLogsModel.setSentDt(new Date());
+                notifLogsModel.setType(LogsTypeEnum.HOUSEHOLD_UPDATE.getKey());
+                notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+                notifLogsModel.setOtherDetail(LogsTypeEnum.HOUSEHOLD_UPDATE.getDesc() + " - " + SystemStatusEnum.getDscpByKey(modelObj.getStatus()));
+                notifLogsModel.setMainActionStr(LogsTypeEnum.HOUSEHOLD_UPDATE.getMainAction());
+                notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+            }
         }
 
         if (!otherHouseholdList.isEmpty()) {
@@ -237,7 +269,7 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
 
         /////////////// NOTIF AND SMS-EMAIL ///////////////
 
-        if (oldHead.getId()!=null && newHead.isPresent()) {
+        if (oldHead!=null && oldHead.getId()!=null) {
             String msgForOldHead = "Hi, " + oldHead.getFirstNm() + "! You have been removed as the household head for " + modelObj.getHouseholdDesc() + ".";
 
             SmsModel oldHeadSms = new SmsModel();
@@ -259,7 +291,7 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
             smsService.sendSms(newHeadSms);
 
             if (newHead.get().getEmailAddress()!=null) {
-                emailService.sendSimpleEmailNotif(oldHead.getEmailAddress(), "Household Detail Update", msgForNewHead);
+                emailService.sendSimpleEmailNotif(newHead.get().getEmailAddress(), "Household Detail Update", msgForNewHead);
             }
 
             NotifLogsModel notifLogsModel = new NotifLogsModel(); //saving notif logs

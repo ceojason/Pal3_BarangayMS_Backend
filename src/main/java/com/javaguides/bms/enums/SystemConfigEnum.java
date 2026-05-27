@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 public enum SystemConfigEnum {
 
-    GLOBAL_SETTINGS("CONFIG_GLOBAL", "Global/System Settings"),
+//    GLOBAL_SETTINGS("CONFIG_GLOBAL", "Global/System Settings"),
     PRICING_SETTINGS("CONFIG_PRICING", "Service Pricing"),
     BRGY_SETTINGS("CONFIG_BRGY_SETTINGS", "Barangay Details")
     ;

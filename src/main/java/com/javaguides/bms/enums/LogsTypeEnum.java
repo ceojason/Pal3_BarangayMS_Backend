@@ -16,7 +16,8 @@ public enum LogsTypeEnum {
     DOCUMENT_REQUEST(4, "Document Request", "New Document Request", null),
     COMM_REPORT(5, "Community Report", "New Community Report", "Community Report - Processed"),
     MY_PROFILE_UPDATE(6, "My Profile Update", null, null),
-    HOUSEHOLD_UPDATE(7, "Household Detail Update", "Household Detail Update", "Household Head Update")
+    HOUSEHOLD_UPDATE(7, "Household Detail Update", "Household Detail Update", "Household Head Update"),
+    RESIDENT_UPDATE(7, "Resident Detail Update", "Resident Detail Update", "Resident Detail - Update")
     ;
     private final Integer key;
     private final String desc;

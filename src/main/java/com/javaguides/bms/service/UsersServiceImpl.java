@@ -42,11 +42,17 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     private final SmsService smsService;
     private final EmailService emailService;
     private final AuditLogService auditLogService;
+    private final ConfigService configService;
     static final String IS_REQUIRED_SUFFIX = " is required.";
 
     @Override
     public Page<UsersReturnModel> searchUsers(MainSearchRequest searchRequest, PageRequest pageRequest) {
         Page<UsersModel> users = usersJDBCRepository.searchUsers(searchRequest, pageRequest);
+        String configAddressPrefix = configService.getAddressConfigObj();
+        users.stream().forEach(item -> {
+            item.setAddressFromConfig(configAddressPrefix);
+            item.setIsBrgyOfficial(item.getBrgyPositionKey()!=null ? YesOrNoEnum.YES.getKey() : YesOrNoEnum.NO.getKey());
+        });
         return users.map(UsersReturnModel::new);
     }
 
@@ -90,6 +96,8 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     public UsersReturnModel validateObj(UsersModel modelObj) {
+        boolean isAdd = modelObj.getId()==null || modelObj.getId().isEmpty();
+
         List<String> errorList = new ArrayList<>();
         if (modelObj.getFirstNm()==null){
             errorList.add("First Name" + IS_REQUIRED_SUFFIX);
@@ -133,41 +141,89 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             modelObj.setStreet(modelObj.getStreet().toUpperCase());
         }
 
-        if (modelObj.getIsHouseholdHead()==null) {
-            errorList.add("Is Household Head" + IS_REQUIRED_SUFFIX);
-        }else{
-            modelObj.setIsHouseholdHeadString(YesOrNoEnum.getDescByKey(modelObj.getIsHouseholdHead()));
-            if (modelObj.getIsHouseholdHead().equals(YesOrNoEnum.YES.getKey())) {
-                if (modelObj.getTempHouseholdForSave()==null) {
-                    errorList.add("Household Description is required for household heads and cannot be emptied.");
-                }else{
-                    List<HouseholdModel> hhList = householdJDBCRepository.findDuplicateHouseholdList(modelObj.getTempUniqueKey());
-                    boolean hasAnExistingActiveHousehold = false;
-                    if (hhList!=null && !hhList.isEmpty()) {
-                        for (HouseholdModel hh : hhList) {
-                            if (hh.getStatus().equals(SystemStatusEnum.ACTIVE.getKey())) {
-                                hasAnExistingActiveHousehold = true;
-                                break;
+        if (isAdd) {
+            if (modelObj.getIsHouseholdHead()==null) {
+                errorList.add("Is Household Head" + IS_REQUIRED_SUFFIX);
+            }else{
+                modelObj.setIsHouseholdHeadString(YesOrNoEnum.getDescByKey(modelObj.getIsHouseholdHead()));
+                if (modelObj.getIsHouseholdHead().equals(YesOrNoEnum.YES.getKey())) {
+                    if (modelObj.getTempHouseholdForSave()==null) {
+                        errorList.add("Household Description is required for household heads and cannot be emptied.");
+                    }else{
+                        List<HouseholdModel> hhList = householdJDBCRepository.findDuplicateHouseholdList(modelObj.getTempUniqueKey());
+                        boolean hasAnExistingActiveHousehold = false;
+                        if (hhList!=null && !hhList.isEmpty()) {
+                            for (HouseholdModel hh : hhList) {
+                                if (hh.getStatus().equals(SystemStatusEnum.ACTIVE.getKey())) {
+                                    hasAnExistingActiveHousehold = true;
+                                    break;
+                                }
+                            }
+                            if (hasAnExistingActiveHousehold) {
+                                if (hhList.size()>1) {
+                                    errorList.add("There are multiple household saved in this address and one is currently on Active status. If you wish to proceed, you must update it to Inactive.");
+                                    throwErrorMessages(errorList);
+                                }else{
+                                    errorList.add("Household under this address was already saved in the system and currently have a head. If you wish to proceed, you must update the existing household's status to Inactive.");
+                                    throwErrorMessages(errorList);
+                                }
                             }
                         }
-                        if (hasAnExistingActiveHousehold) {
+                    }
+                }else{
+                    if (modelObj.getHouseholdKey()==null) {
+                        errorList.add("Household" + IS_REQUIRED_SUFFIX);
+                    }else{
+                        Optional<HouseholdModel> household = householdJDBCRepository.findById(modelObj.getHouseholdKey());
+                        household.ifPresent(householdModel -> modelObj.setTempHouseholdForSave(householdModel.getHouseholdDesc()));
+                    }
+                }
+            }
+        }else{
+            Optional<UsersModel> savedUser = usersJDBCRepository.findById(modelObj.getId());
+            if (savedUser!=null && savedUser.isPresent()) {
+                if (modelObj.getIsHouseholdHead()==null) {
+                    errorList.add("Is Household Head" + IS_REQUIRED_SUFFIX);
+                }else{
+                    if (modelObj.getIsHouseholdHead().equals(YesOrNoEnum.YES.getKey())) {
+                        String uniqueKey = modelObj.getTempUniqueKey();
+                        String userHouseholdKey = savedUser.get().getHouseholdKey();
+                        boolean hasSavedHousehold = false;
+
+                        List<HouseholdModel> hhList = householdJDBCRepository.findDuplicateHouseholdList(uniqueKey);
+
+                        if (hhList!=null && !hhList.isEmpty()) {
+                            for (HouseholdModel hh : hhList) {
+                                if (hh.getId().equals(userHouseholdKey)) {
+                                    hasSavedHousehold = true;
+                                    break;
+                                }
+                            }
+                        }else{
+                            modelObj.setHouseholdKey(null);
+                        }
+
+                        if (hasSavedHousehold) {
+                            modelObj.setHouseholdKey(userHouseholdKey);
+                        }else{ //if the user is assigning to a new household and if he/she set as head
+                            assert hhList!=null;
                             if (hhList.size()>1) {
                                 errorList.add("There are multiple household saved in this address and one is currently on Active status. If you wish to proceed, you must update it to Inactive.");
                                 throwErrorMessages(errorList);
-                            }else{
+                            }else if(hhList.size()==1){
                                 errorList.add("Household under this address was already saved in the system and currently have a head. If you wish to proceed, you must update the existing household's status to Inactive.");
                                 throwErrorMessages(errorList);
                             }
                         }
+                    }else{
+                        Optional<HouseholdModel> household = householdJDBCRepository.findById(modelObj.getHouseholdKey());
+                        household.ifPresent(householdModel -> modelObj.setTempHouseholdForSave(householdModel.getHouseholdDesc()));
                     }
                 }
+
+
             }else{
-                if (modelObj.getHouseholdKey()==null) {
-                    errorList.add("Household" + IS_REQUIRED_SUFFIX);
-                }else{
-                    Optional<HouseholdModel> household = householdJDBCRepository.findById(modelObj.getHouseholdKey());
-                    household.ifPresent(householdModel -> modelObj.setTempHouseholdForSave(householdModel.getHouseholdDesc()));
-                }
+                throwErrorMessage("An error occurred. Transaction cannot be processed.");
             }
         }
 
@@ -254,6 +310,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         }
 
         modelObj.setStatus(SystemStatusEnum.ACTIVE.getKey());
+        modelObj.setAddressFromConfig(configService.getAddressConfigObj());
 
         if (!errorList.isEmpty()) throwErrorMessages(errorList);
         return new UsersReturnModel(modelObj);
@@ -340,6 +397,63 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
     }
 
     @Override
+    public UsersReturnModel updateResident(EnrollmentRequest requestObj) {
+        UsersModel modelObj = new UsersModel(requestObj);
+        String tempUniqueKey = formatHouseholdUniqKey(requestObj);
+        modelObj.setTempUniqueKey(tempUniqueKey);
+        modelObj.setClassificationKey(modelObj.getClassificationKeyString());
+
+        String householdId = "";
+        if (modelObj.getIsHouseholdHead()!=null && YesOrNoEnum.YES.getKey().equals(modelObj.getIsHouseholdHead()) && modelObj.getHouseholdKey()==null) {
+            HouseholdModel household = new HouseholdModel();
+            household.setStatus(SystemStatusEnum.ACTIVE.getKey());
+            household.setHouseholdDesc(modelObj.getTempHouseholdForSave());
+            household.setHouseholdUniqKey(modelObj.getTempUniqueKey());
+            householdId = householdService.saveNewHousehold(household);
+            modelObj.setHouseholdKey(householdId);
+        }
+
+        usersJDBCRepository.updateUser(modelObj);
+
+
+        String msg = "Hi, " + modelObj.getFirstNm()  + "! You details has been successfully updated in Barangay eConnect System.";
+
+        SmsModel sms = new SmsModel();
+        sms.setRecipient(modelObj.getFormattedMobileNo());
+        sms.setMessage(msg);
+        smsService.sendSms(sms);
+
+        if (modelObj.getEmailAddress() != null) {
+            emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(), "Resident Detail - Update", msg);
+        }
+
+        //saving notif logs
+        NotifLogsModel notifLogsModel = new NotifLogsModel();
+        notifLogsModel.setRefNo(generateReferenceNumber(null));
+        notifLogsModel.setUserId(modelObj.getId());
+        notifLogsModel.setMessage(sms.getMessage());
+        notifLogsModel.setRecipient(modelObj.getFullNm());
+        notifLogsModel.setIsSmsEmail(YesOrNoEnum.YES.getKey());
+        notifLogsModel.setSentDt(new Date());
+        notifLogsModel.setType(LogsTypeEnum.RESIDENT_UPDATE.getKey());
+        notifLogsModel.setStatus(AlertStatusEnum.Normal.getKey());
+        notifLogsModel.setOtherDetail(modelObj.getFullNm());
+        notifLogsModel.setMainActionStr(LogsTypeEnum.RESIDENT_UPDATE.getSecAction());
+        notifLogsJDBCRepository.saveNotifLogs(notifLogsModel);
+
+
+
+
+        UsersReturnModel returnObj = new UsersReturnModel(modelObj);
+        returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
+                StringMessagesUtil.UPDATED_SINGLE_SUFFIX,
+                StringMessagesUtil.RESIDENT_DTLS
+        ));
+        returnObj.setRefNo(generateReferenceNumber(null));
+        return returnObj;
+    }
+
+    @Override
     public UsersReturnModel update(EnrollmentRequest requestObj) {
         UsersModel modelObj = new UsersModel(requestObj);
         validateObj(modelObj);
@@ -358,7 +472,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         UsersReturnModel returnObj = new UsersReturnModel(modelObj);
         returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
                 StringMessagesUtil.UPDATED_SINGLE_SUFFIX,
-                StringMessagesUtil.RESIDENT
+                StringMessagesUtil.RESIDENT_DTLS
         ));
         return returnObj;
     }
@@ -534,6 +648,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         Optional<LoginCreds> loginObj = loginJDBCRepository.getUserById(userId);
         if (user.isPresent()) {
             UsersModel modelObj = user.get();
+            modelObj.setAddressFromConfig(configService.getAddressConfigObj());
 
             if (loginObj.isPresent()) {
                 returnObj.setLastLoginDt(loginObj.get().getUpdatedDt());
@@ -547,6 +662,20 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             returnObj.setLastNm(modelObj.getLastNm());
             returnObj.setFullNm(modelObj.getFullNm());
             returnObj.setSuffix(modelObj.getSuffix());
+
+            returnObj.setBrgyPositionKey(modelObj.getBrgyPositionKey());
+            returnObj.setIsBrgyOfficial(modelObj.getBrgyPositionKey()!=null ? YesOrNoEnum.YES.getKey() : YesOrNoEnum.NO.getKey());
+            returnObj.setBlock(modelObj.getBlock());
+            returnObj.setLot(modelObj.getLot());
+            returnObj.setIsHouseholdHead(modelObj.getIsHouseholdHead());
+            returnObj.setStreet(modelObj.getStreet());
+            returnObj.setHouseholdKey(modelObj.getHouseholdKey());
+
+            Optional<HouseholdModel> household = householdJDBCRepository.findById(modelObj.getHouseholdKey());
+            household.ifPresent(householdModel -> returnObj.setTempHouseholdForSave(householdModel.getHouseholdDesc()));
+
+
+            returnObj.setIsHouseholdHead(modelObj.getIsHouseholdHead());
 
             returnObj.setBirthDt(modelObj.getBirthDt());
             returnObj.setBirthDtString(

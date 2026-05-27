@@ -15,6 +15,7 @@ import com.javaguides.bms.model.SystemAdminModel;
 import com.javaguides.bms.model.UsersModel;
 import com.javaguides.bms.model.basemodel.SessionUserModel;
 import com.javaguides.bms.model.requestmodel.LoginCredsRequest;
+import com.javaguides.bms.service.ConfigService;
 import com.javaguides.bms.service.LoginService;
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,7 @@ public class LoginController {
     private final LoginJDBCRepository loginJDBCRepository;
     private final SystemAdminJDBCRepository systemAdminJDBCRepository;
     private final UsersJDBCRepository usersJDBCRepository;
+    private final ConfigService configService;
 
     @PostMapping
     public ApiResponseModel login(@RequestBody LoginCredsRequest request) throws Exception {
@@ -79,7 +81,9 @@ public class LoginController {
                 });
             } else if (roleKey.equals(SystemUserEnum.SYSTEM_USER.getKey())) {
                 Optional<UsersModel> userObj = usersJDBCRepository.findById(userId);
+                String configAddressPrefix = configService.getAddressConfigObj();
                 userObj.ifPresent(u -> {
+                    u.setAddressFromConfig(configAddressPrefix);
                     sessionUser.setFirstNm(u.getFirstNm());
                     sessionUser.setMiddleNm(u.getMiddleNm());
                     sessionUser.setLastNm(u.getLastNm());

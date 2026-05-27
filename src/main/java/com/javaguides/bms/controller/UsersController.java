@@ -44,6 +44,11 @@ public class UsersController {
         return new ApiResponseModel(usersService.update(requestObj));
     }
 
+    @PostMapping("/updateResident")
+    public ApiResponseModel updateResident(@RequestBody EnrollmentRequest requestObj) {
+        return new ApiResponseModel(usersService.updateResident(requestObj));
+    }
+
     @PostMapping("/reset")
     public ApiResponseModel reset(@RequestBody EnrollmentRequest requestObj) {
         return new ApiResponseModel(usersService.reset(requestObj));

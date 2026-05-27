@@ -92,6 +92,13 @@ public class ConfigRequest {
     @JsonProperty("FEE-026")
     private BigDecimal fee026;
 
+    private String barangayNm;
+    private String municipalAddress;
+    private String province;
+    private String zipCode;
+    private String region;
+    private String country;
+
     private String configCd;
 
 }

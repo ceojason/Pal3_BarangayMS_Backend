@@ -18,6 +18,16 @@ public class ConfigController {
         return new ApiResponseModel(configService.feePricingList());
     }
 
+    @GetMapping("/getBarangayDetails")
+    public ApiResponseModel getBarangayDetails() {
+        return new ApiResponseModel(configService.getBarangayDetails());
+    }
+
+    @GetMapping("/findConfigById/{id}")
+    public ApiResponseModel findConfigById(@PathVariable String id) {
+        return new ApiResponseModel(configService.findConfigById(id));
+    }
+
     @PostMapping("/validateAndUpdate")
     public ApiResponseModel validateAndUpdate(@RequestBody ConfigRequest requestObj) {
         return new ApiResponseModel(configService.validateAndUpdate(requestObj));

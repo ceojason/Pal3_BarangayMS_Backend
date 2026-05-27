@@ -33,6 +33,7 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
     private final UsersJDBCRepository usersJDBCRepository;
     private final DocumentJDBCRepository documentJDBCRepository;
     private final EmailService emailService;
+    private final ConfigService configService;
 
     @Override
     public DocumentReturnModel validateRequest(DocumentRequest documentRequest, String userId) {
@@ -85,6 +86,8 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
             model.setUserId(userId);
             Optional<UsersModel> user = usersJDBCRepository.findById(userId);
             if (user.isPresent()) {
+                String configAddressPrefix = configService.getAddressConfigObj();
+                model.setAddressFromConfig(configAddressPrefix);
                 model.setRequestor(user.get().getFullNm());
                 if (user.get().getBirthDt()!=null) {
                     model.setBirthDt(user.get().getBirthDt());
@@ -100,6 +103,18 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
                 }
                 if (user.get().getMobileNo()!=null) {
                     model.setMobileNo(user.get().getMobileNo());
+                }
+                if (user.get().getBlock()!=null) {
+                    model.setBlock(user.get().getBlock());
+                }
+                if (user.get().getLot()!=null) {
+                    model.setLot(user.get().getLot());
+                }
+                if (user.get().getStreet()!=null) {
+                    model.setStreet(user.get().getStreet());
+                }
+                if (user.get().getPhaseKey()!=null) {
+                    model.setPhaseKey(user.get().getPhaseKey());
                 }
             }else{
                 errorList.add("Document request cannot proceed at this time.");
@@ -125,6 +140,8 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
 
         Optional<UsersModel> user = usersJDBCRepository.findById(documentRequest.getUserId());
         if (user.isPresent()) {
+            String configAddressPrefix = configService.getAddressConfigObj();
+            modelObj.setAddressFromConfig(configAddressPrefix);
             modelObj.setRequestor(user.get().getFullNm());
             if (user.get().getBirthDt()!=null) {
                 modelObj.setBirthDt(user.get().getBirthDt());
@@ -140,6 +157,18 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
             }
             if (user.get().getMobileNo()!=null) {
                 modelObj.setMobileNo(user.get().getMobileNo());
+            }
+            if (user.get().getBlock()!=null) {
+                modelObj.setBlock(user.get().getBlock());
+            }
+            if (user.get().getLot()!=null) {
+                modelObj.setLot(user.get().getLot());
+            }
+            if (user.get().getStreet()!=null) {
+                modelObj.setStreet(user.get().getStreet());
+            }
+            if (user.get().getPhaseKey()!=null) {
+                modelObj.setPhaseKey(user.get().getPhaseKey());
             }
 
             if (user.get().getMobileNo() != null && user.get().getMobileNo().startsWith("0")) {
@@ -219,8 +248,12 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
 
     @Override
     public Page<DocumentReturnModel> searchRequests(MainSearchRequest searchRequest, PageRequest pageRequest) {
-        Page<DocumentModel> users = documentJDBCRepository.searchRequests(searchRequest, pageRequest);
-        return users.map(DocumentReturnModel::new);
+        Page<DocumentModel> documents = documentJDBCRepository.searchRequests(searchRequest, pageRequest);
+        String configAddressPrefix = configService.getAddressConfigObj();
+        documents.stream().forEach(item -> {
+            item.setAddressFromConfig(configAddressPrefix);
+        });
+        return documents.map(DocumentReturnModel::new);
     }
 
     @Override

@@ -22,4 +22,6 @@ public interface HouseholdJDBCRepository {
     Optional<HouseholdModel> findById(String id);
 
     List<HouseholdModel> findHouseholdByHeadAndStatus(Integer status, String block, String lot, Integer phaseKey);
+
+    List<HouseholdModel> findHousehold(Integer status, String block, String lot, Integer phaseKey);
 }

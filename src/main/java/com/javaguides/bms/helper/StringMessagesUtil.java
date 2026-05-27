@@ -38,11 +38,14 @@ public final class StringMessagesUtil {
     public static final String BIRTHDAY = "Birthday";
     public static final String USER = "User";
     public static final String RESIDENT = "Resident";
+    public static final String RESIDENT_DTLS = "Resident details";
     public static final String PRICING = "Service Pricing";
+    public static final String BARANGAY_DTLS = "Barangay Details";
     public static final String ANNOUNCEMENT = "Announcement";
+    public static final String HOUSEHOLD = "Household";
     public static final String ANNOUNCEMENTS = "Announcements";
     public static final String COMM_REPORT = "Community Report";
-    public static final String HOUSEHOLD = "Household";
+    public static final String BARANGAY = "Barangay";
 
 
     ///////////////////////////////////////////////////////////////////////

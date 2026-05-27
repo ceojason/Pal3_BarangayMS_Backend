@@ -15,7 +15,7 @@ public interface HouseholdService {
 
     Page<HouseholdReturnModel> search(MainSearchRequest searchRequest, PageRequest pageRequest);
 
-    List<KeyValueModelStr> findAllActiveHouseholdForRegistration(String block, String lot, Integer phaseKey);
+    List<KeyValueModelStr> findAllActiveHouseholdForRegistration(String block, String lot, String street, Integer phaseKey);
 
     List<KeyValueModelStr> findMembersById(String id);
 

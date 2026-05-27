@@ -6,6 +6,7 @@ import com.javaguides.bms.enums.DateFormatEnum;
 import com.javaguides.bms.enums.PhaseEnum;
 import com.javaguides.bms.enums.ResidentClassificationEnum;
 import com.javaguides.bms.helper.DateUtil;
+import com.javaguides.bms.helper.KeyValueModel;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import jakarta.persistence.Column;
@@ -154,10 +155,13 @@ public class UsersModel extends BaseModel {
     @Transient
     private String isRegisteredVoterString;
 
+    @Transient
+    private String addressFromConfig;
+
     public String getHomeAddress() {
         String defaultBrgyNmCityAndProv = "PALIPARAN III DASMARIÑAS CITY, CAVITE";
         String defaultZipCd = "4114";
-        boolean appendDefaultAddressString = true;
+        boolean appendDefaultAddressString = false;
 
         StringBuilder address = new StringBuilder();
         if (block!=null) address.append(block).append(" ");
@@ -168,6 +172,8 @@ public class UsersModel extends BaseModel {
         if (appendDefaultAddressString) {
             address.append(defaultBrgyNmCityAndProv).append(" ");
             address.append(defaultZipCd);
+        }else{
+            address.append(addressFromConfig!=null ? addressFromConfig : "");
         }
 
         return address.toString();
@@ -254,6 +260,17 @@ public class UsersModel extends BaseModel {
         return keys;
     }
 
+    public List<KeyValueModel> getKeyValueForResidentKeys() {
+        List<KeyValueModel> returnValue = new ArrayList<>();
+        List<Integer> keys = getClassificationKeyList();
+        if (keys!=null && !keys.isEmpty()) {
+            for (Integer key : keys) {
+                returnValue.add(new KeyValueModel(key, ResidentClassificationEnum.getDescByKey(key)));
+            }
+        }
+        return returnValue;
+    }
+
     public UsersModel(EnrollmentRequest request) {
         if (request!=null) {
             setId(request.getId());
@@ -288,6 +305,7 @@ public class UsersModel extends BaseModel {
             setCd(request.getCd());
             setPassword(request.getPassword());
             setRefNo(request.getRefNo());
+            setStatus(request.getStatus());
         }
     }
 }

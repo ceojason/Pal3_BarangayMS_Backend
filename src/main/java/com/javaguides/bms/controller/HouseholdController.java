@@ -15,9 +15,16 @@ public class HouseholdController {
 
     private final HouseholdService householdService;
 
-    @GetMapping("/findActiveHousehold/{block}/{lot}/{phaseKey}")
-    public ApiResponseModel findActiveHousehold(@PathVariable String block, @PathVariable String lot, @PathVariable Integer phaseKey) {
-        return new ApiResponseModel(householdService.findAllActiveHouseholdForRegistration(block, lot, phaseKey));
+    @GetMapping("/findActiveHousehold")
+    public ApiResponseModel findActiveHousehold(
+            @RequestParam String block,
+            @RequestParam String lot,
+            @RequestParam(required = false) String street,
+            @RequestParam Integer phaseKey) {
+
+        return new ApiResponseModel(
+                householdService.findAllActiveHouseholdForRegistration(block, lot, street, phaseKey)
+        );
     }
 
     @PostMapping("/search")

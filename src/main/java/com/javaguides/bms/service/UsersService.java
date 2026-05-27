@@ -18,6 +18,8 @@ public interface UsersService {
 
     UsersReturnModel saveEnrollment(EnrollmentRequest requestObj);
 
+    UsersReturnModel updateResident(EnrollmentRequest requestObj);
+
     UsersReturnModel update(EnrollmentRequest requestObj);
 
     UsersReturnModel deleteUser(String userId);

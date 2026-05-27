@@ -2,6 +2,7 @@ package com.javaguides.bms.model.returnmodel;
 
 import com.javaguides.bms.enums.*;
 import com.javaguides.bms.helper.DateUtil;
+import com.javaguides.bms.helper.KeyValueModel;
 import com.javaguides.bms.model.UsersModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,7 @@ public class UsersReturnModel {
     private String occupation;
     private String religion;
     private List<Integer> residentClassKeys;
+    private String classificationKey;
     private Integer classificationTypeKey;
     private String classificationTypeString;
     private Integer phaseKey;
@@ -69,6 +71,7 @@ public class UsersReturnModel {
     private Integer brgyPositionKey;
     private String brgyPositionKeyString;
     private String tempHouseholdForSave;
+    private Integer isBrgyOfficial;
 
     public UsersReturnModel(UsersModel modelObj) {
         this.id = modelObj.getId();
@@ -92,6 +95,8 @@ public class UsersReturnModel {
         this.occupation = modelObj.getOccupation();
         this.religion = modelObj.getReligion();
         this.residentClassKeys = modelObj.getClassificationKeyList();
+        this.setBrgyPositionKey(modelObj.getBrgyPositionKey());
+        this.isBrgyOfficial = modelObj.getIsBrgyOfficial();
         this.classificationTypeString = modelObj.getClassificationKeyStringForDisplay();
         this.phaseKey = modelObj.getPhaseKey();
         this.dateEnrolled = modelObj.getDateEnrolled();

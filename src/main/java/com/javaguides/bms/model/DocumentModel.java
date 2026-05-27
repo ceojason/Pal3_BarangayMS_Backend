@@ -3,6 +3,7 @@ package com.javaguides.bms.model;
 import com.javaguides.bms.customannotations.TableAlias;
 import com.javaguides.bms.enums.DocumentSubCatEnum;
 import com.javaguides.bms.enums.DocumentTypeEnum;
+import com.javaguides.bms.enums.PhaseEnum;
 import com.javaguides.bms.model.basemodel.BaseModel;
 import com.javaguides.bms.model.requestmodel.DocumentRequest;
 import jakarta.persistence.Column;
@@ -112,20 +113,26 @@ public class DocumentModel extends BaseModel {
     @Transient
     private String civilStatusString;
 
+    @Transient
+    private String addressFromConfig;
+
 
     public String getHomeAddress() {
         String defaultBrgyNmCityAndProv = "PALIPARAN III DASMARIÑAS CITY, CAVITE";
         String defaultZipCd = "4114";
-        boolean appendDefaultAddressString = true;
+        boolean appendDefaultAddressString = false;
 
         StringBuilder address = new StringBuilder();
         if (block!=null) address.append(block).append(" ");
         if (lot!=null) address.append(lot).append(" ");
-        if (street!=null) address.append(street);
+        if (street!=null) address.append(street).append(" ");
+        if (phaseKey!=null) address.append(PhaseEnum.getDesc2ByKey(phaseKey)).append(" ");
 
         if (appendDefaultAddressString) {
             address.append(defaultBrgyNmCityAndProv).append(" ");
             address.append(defaultZipCd);
+        }else{
+            address.append(addressFromConfig!=null ? addressFromConfig : "");
         }
 
         return address.toString();

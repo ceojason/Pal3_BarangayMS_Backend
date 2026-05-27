@@ -49,9 +49,11 @@ public class DocumentReturnModel {
     private String civilStatusString;
     private String mobileNo;
 
+    private String fullName;
 
     public DocumentReturnModel(DocumentModel model) {
         this.id = model.getId();
+        this.fullName = model.getRequestor();
         this.userId = model.getUserId();
         this.docuCategoryKey = model.getDocuCategoryKey();
         this.docuSubCategoryKey = model.getDocuSubCategoryKey();

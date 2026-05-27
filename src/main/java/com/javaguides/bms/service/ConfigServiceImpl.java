@@ -6,6 +6,7 @@ import com.javaguides.bms.enums.SystemConfigEnum;
 import com.javaguides.bms.helper.StringMessagesUtil;
 import com.javaguides.bms.jdbc.repository.NotifLogsJDBCRepository;
 import com.javaguides.bms.jdbc.repository.SystemConfigJDBCRepository;
+import com.javaguides.bms.model.ConfigModel;
 import com.javaguides.bms.model.FeePricingModel;
 import com.javaguides.bms.model.requestmodel.ConfigRequest;
 import com.javaguides.bms.model.returnmodel.ConfigReturnModel;
@@ -41,15 +42,53 @@ public class ConfigServiceImpl extends BaseServiceImpl implements ConfigService 
     }
 
     @Override
+    public String getAddressConfigObj() {
+        String id = SystemConfigEnum.BRGY_SETTINGS.getCode();
+        Optional<ConfigModel> configObj = findConfigById(id);
+        return configObj.map(ConfigModel::configAddressPrefix).orElse(null);
+    }
+
+    @Override
+    public Optional<ConfigModel> findConfigById(String id) {
+        Optional<ConfigModel> modelObj = Optional.of(new ConfigModel());
+        if (id!=null) modelObj = systemConfigJDBCRepository.findById(id);
+        return modelObj;
+    }
+
+    @Override
+    public ConfigReturnModel getBarangayDetails() {
+        ConfigReturnModel returnObj = new ConfigReturnModel();
+        Optional<ConfigModel> modelObj = systemConfigJDBCRepository.findById(SystemConfigEnum.BRGY_SETTINGS.getCode());
+        if (modelObj.isEmpty()) {
+            throwErrorMessage("An error occurred. Transaction cannot be processed.");
+        }else{
+            ConfigModel tempModel = modelObj.get();
+            returnObj.setBarangayNm(tempModel.getString_1());
+            returnObj.setMunicipalAddress(tempModel.getString_2());
+            returnObj.setProvince(tempModel.getString_3());
+            returnObj.setZipCode(tempModel.getString_4());
+            returnObj.setRegion(tempModel.getString_5());
+            returnObj.setCountry(tempModel.getString_6());
+            returnObj.setConfigCd(tempModel.getId());
+        }
+
+        return returnObj;
+    }
+
+    @Override
     public ConfigReturnModel validateAndUpdate(ConfigRequest requestObj) {
         ConfigReturnModel returnObj = new ConfigReturnModel();
         List<String> errors = new ArrayList<>();
-        String refNo = null;
+
+        String ackMsg = null;
 
         if (requestObj!=null) {
             if (requestObj.getConfigCd()!=null) {
                 if (requestObj.getConfigCd().equals(SystemConfigEnum.PRICING_SETTINGS.getCode())) {
-                    refNo = mapToPricingAndProcessUpdate(requestObj);
+                    ackMsg = mapToPricingAndProcessUpdate(requestObj);
+                }
+                else if (requestObj.getConfigCd().equals(SystemConfigEnum.BRGY_SETTINGS.getCode())) {
+                    ackMsg = mapToBrgyConfigAndProcessUpdate(requestObj);
                 }
             }else{
                 errors.add("Please select a service.");
@@ -59,13 +98,28 @@ public class ConfigServiceImpl extends BaseServiceImpl implements ConfigService 
         }
 
         if (!errors.isEmpty()) throwErrorMessages(errors);
+        String refNo = generateReferenceNumber(null);
         returnObj.setRefNo(refNo);
-        returnObj.setAckMessage(StringMessagesUtil.formatMsgString(
-                StringMessagesUtil.UPDATED_MULTI_SUFFIX,
-                StringMessagesUtil.PRICING
-        ));
+        returnObj.setAckMessage(ackMsg);
 
         return returnObj;
+    }
+
+    private String mapToBrgyConfigAndProcessUpdate(ConfigRequest requestObj) {
+        ConfigModel modelObj = new ConfigModel();
+        modelObj.setId(requestObj.getConfigCd());
+        modelObj.setString_1(requestObj.getBarangayNm().trim());
+        modelObj.setString_2(requestObj.getMunicipalAddress().trim());
+        modelObj.setString_3(requestObj.getProvince().trim());
+        modelObj.setString_4(requestObj.getZipCode().trim());
+        modelObj.setString_5(requestObj.getRegion().trim());
+        modelObj.setString_6(requestObj.getCountry().trim());
+        modelObj.setStatus(null);
+        systemConfigJDBCRepository.updateConfig(modelObj);
+
+        return StringMessagesUtil.formatMsgString(
+                StringMessagesUtil.UPDATED_MULTI_SUFFIX,
+                StringMessagesUtil.BARANGAY_DTLS);
     }
 
     private String mapToPricingAndProcessUpdate(ConfigRequest requestObj) {
@@ -100,7 +154,9 @@ public class ConfigServiceImpl extends BaseServiceImpl implements ConfigService 
 
         pricingModels.forEach(systemConfigJDBCRepository::updateFeePricing);
 
-        return generateReferenceNumber(null);
+        return StringMessagesUtil.formatMsgString(
+                StringMessagesUtil.UPDATED_MULTI_SUFFIX,
+                StringMessagesUtil.PRICING);
     }
 
     private FeePricingModel buildModel(Integer docSubCatKey, BigDecimal fee) {
