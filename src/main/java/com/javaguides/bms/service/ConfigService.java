@@ -15,6 +15,8 @@ public interface ConfigService {
 
     Optional<ConfigModel> findConfigById(String id);
 
+    ConfigReturnModel getHotlines();
+
     ConfigReturnModel getBarangayDetails();
 
     ConfigReturnModel validateAndUpdate(ConfigRequest requestObj);

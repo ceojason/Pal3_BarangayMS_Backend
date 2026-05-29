@@ -53,11 +53,11 @@ public class AnnouncementJDBCRepositoryImpl extends BaseJDBCRepositoryImpl imple
     }
 
     @Override
-    public List<AnnouncementModel> findAnnouncementByUserId(String userId) {
+    public List<AnnouncementModel> findAnnouncementByUserId(String userId, Integer noOfDisplay) {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("today", new java.sql.Date(System.currentTimeMillis()));
         map.addValue("userId", userId);
-        map.addValue("limit", 3); //value should be from tbl_system_config
+        map.addValue("limit", noOfDisplay!=null ? noOfDisplay : 3);
 
         StringBuilder query = new StringBuilder()
                 .append(" SELECT ").append(DbTableUtil.buildSelectClause2(AnnouncementModel.class))

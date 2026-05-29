@@ -42,7 +42,7 @@ public enum LogsTypeEnum {
 
     public static List<KeyValueModel> getTypeList() {
         List<KeyValueModel> list = new ArrayList<>();
-        List<Integer> keysToRemove = List.of(NEW_USER_SMS.key, RESET_USER.key, DOCUMENT_REQUEST.key, COMM_REPORT.key, MY_PROFILE_UPDATE.key);
+        List<Integer> keysToRemove = List.of(NEW_USER_SMS.key, RESET_USER.key, DOCUMENT_REQUEST.key, COMM_REPORT.key, MY_PROFILE_UPDATE.key, HOUSEHOLD_UPDATE.key, RESIDENT_UPDATE.key);
         for (LogsTypeEnum val : values()) {
             if (!keysToRemove.contains(val.getKey())) list.add(new KeyValueModel(val.getKey(), val.getDesc()));
         }

@@ -414,6 +414,21 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             householdId = householdService.saveNewHousehold(household);
             modelObj.setHouseholdKey(householdId);
         }
+        if (modelObj.getIsHouseholdHead()!=null && YesOrNoEnum.YES.getKey().equals(modelObj.getIsHouseholdHead()) && modelObj.getHouseholdKey()!=null) {
+            List<UsersModel> members = usersJDBCRepository.findByHouseholdKeys(List.of(modelObj.getHouseholdKey()));
+            UsersModel currentHead = new UsersModel();
+            if (members!=null && !members.isEmpty()) {
+                for (UsersModel m : members) {
+                    if (m.getIsHouseholdHead().equals(YesOrNoEnum.YES.getKey())) {
+                        currentHead = m;
+                        break;
+                    }
+                }
+            }
+            if (currentHead.getId()!=null && !currentHead.getId().equals(modelObj.getId())) {
+                usersJDBCRepository.updateIsHouseholdHeadById(currentHead.getId(), YesOrNoEnum.NO.getKey());
+            }
+        }
 
         usersJDBCRepository.updateUser(modelObj);
 

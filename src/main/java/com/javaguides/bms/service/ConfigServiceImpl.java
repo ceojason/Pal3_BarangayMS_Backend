@@ -56,6 +56,31 @@ public class ConfigServiceImpl extends BaseServiceImpl implements ConfigService 
     }
 
     @Override
+    public ConfigReturnModel getHotlines() {
+        ConfigReturnModel returnObj = new ConfigReturnModel();
+        Optional<ConfigModel> modelObj = systemConfigJDBCRepository.findById(SystemConfigEnum.EMERGENCY_HOTLINES.getCode());
+        if (modelObj.isEmpty()) {
+            throwErrorMessage("An error occurred. Transaction cannot be processed.");
+        }else{
+            ConfigModel tempModel = modelObj.get();
+            returnObj.setString1(tempModel.getString_1());
+            returnObj.setString2(tempModel.getString_2());
+            returnObj.setString3(tempModel.getString_3());
+            returnObj.setString4(tempModel.getString_4());
+            returnObj.setString5(tempModel.getString_5());
+            returnObj.setString6(tempModel.getString_6());
+            returnObj.setString7(tempModel.getString_7());
+            returnObj.setString8(tempModel.getString_8());
+            returnObj.setString9(tempModel.getString_9());
+            returnObj.setString10(tempModel.getString_10());
+            returnObj.setConfigCd(tempModel.getId());
+        }
+
+        return returnObj;
+
+    }
+
+    @Override
     public ConfigReturnModel getBarangayDetails() {
         ConfigReturnModel returnObj = new ConfigReturnModel();
         Optional<ConfigModel> modelObj = systemConfigJDBCRepository.findById(SystemConfigEnum.BRGY_SETTINGS.getCode());
@@ -90,6 +115,9 @@ public class ConfigServiceImpl extends BaseServiceImpl implements ConfigService 
                 else if (requestObj.getConfigCd().equals(SystemConfigEnum.BRGY_SETTINGS.getCode())) {
                     ackMsg = mapToBrgyConfigAndProcessUpdate(requestObj);
                 }
+                else if (requestObj.getConfigCd().equals(SystemConfigEnum.EMERGENCY_HOTLINES.getCode())) {
+                    ackMsg = mapToHotlineFieldsAndProcessUpdate(requestObj);
+                }
             }else{
                 errors.add("Please select a service.");
             }
@@ -103,6 +131,27 @@ public class ConfigServiceImpl extends BaseServiceImpl implements ConfigService 
         returnObj.setAckMessage(ackMsg);
 
         return returnObj;
+    }
+
+    private String mapToHotlineFieldsAndProcessUpdate(ConfigRequest requestObj) {
+        ConfigModel modelObj = new ConfigModel();
+        modelObj.setId(requestObj.getConfigCd());
+        modelObj.setString_1(requestObj.getString1().trim());
+        modelObj.setString_2(requestObj.getString2().trim());
+        modelObj.setString_3(requestObj.getString3().trim());
+        modelObj.setString_4(requestObj.getString4().trim());
+        modelObj.setString_5(requestObj.getString5().trim());
+        modelObj.setString_6(requestObj.getString6().trim());
+        modelObj.setString_7(requestObj.getString7().trim());
+        modelObj.setString_8(requestObj.getString8().trim());
+        modelObj.setString_9(requestObj.getString9().trim());
+        modelObj.setString_10(requestObj.getString10().trim());
+        modelObj.setStatus(null);
+        systemConfigJDBCRepository.updateConfig(modelObj);
+
+        return StringMessagesUtil.formatMsgString(
+                StringMessagesUtil.UPDATED_MULTI_SUFFIX,
+                StringMessagesUtil.EMERGENCY_HOTLINES);
     }
 
     private String mapToBrgyConfigAndProcessUpdate(ConfigRequest requestObj) {

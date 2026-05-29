@@ -43,11 +43,11 @@ public class NotifLogsJDBCRepositoryImpl extends BaseJDBCRepositoryImpl implemen
     }
 
     @Override
-    public List<NotifLogsModel> findRecentResidentLogs(String userId) {
+    public List<NotifLogsModel> findRecentResidentLogs(String userId, Integer noOfDisplay) {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("keys", LogsTypeEnum.residentLogKeys());
         map.addValue("userId", userId);
-        map.addValue("limit", 3); //value should be from tbl_system_config
+        map.addValue("limit", noOfDisplay!=null ? noOfDisplay : 3);
 
         StringBuilder qry = new StringBuilder()
                 .append(" SELECT * FROM ")

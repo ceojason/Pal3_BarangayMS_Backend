@@ -41,6 +41,7 @@ public final class StringMessagesUtil {
     public static final String RESIDENT_DTLS = "Resident details";
     public static final String PRICING = "Service Pricing";
     public static final String BARANGAY_DTLS = "Barangay Details";
+    public static final String EMERGENCY_HOTLINES = "Emergency Hotlines";
     public static final String ANNOUNCEMENT = "Announcement";
     public static final String HOUSEHOLD = "Household";
     public static final String ANNOUNCEMENTS = "Announcements";

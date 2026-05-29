@@ -196,7 +196,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
 
                 if (sendViaEmail && modelObj.getEmailAddress()!=null) {
                     emailService.sendSimpleEmailNotif(modelObj.getEmailAddress(),
-                            emailHeader + ": " + AlertStatusEnum.getDesc3ByKey(modelObj.getType()) + " Announcement",
+                            emailHeader + ": " + AlertStatusEnum.getDesc3ByKey(modelObj.getAlertStatus()) + " Announcement",
                             finalMsg.toString()
                     );
                 }

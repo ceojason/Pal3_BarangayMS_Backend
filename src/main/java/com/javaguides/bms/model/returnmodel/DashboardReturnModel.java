@@ -1,6 +1,8 @@
 package com.javaguides.bms.model.returnmodel;
 
+import com.javaguides.bms.helper.KeyValueModelStr;
 import com.javaguides.bms.model.AnnouncementModel;
+import com.javaguides.bms.model.ConfigModel;
 import com.javaguides.bms.model.NotifLogsModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +29,7 @@ public class DashboardReturnModel {
     private String paramLabel5;
 
     private List<NotifLogsModel> logsList;
+    private List<KeyValueModelStr> hotlineList;
 
     private Integer systemActiveCount;
 

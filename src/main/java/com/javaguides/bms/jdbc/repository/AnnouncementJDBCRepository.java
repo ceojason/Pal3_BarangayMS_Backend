@@ -14,7 +14,7 @@ public interface AnnouncementJDBCRepository {
 
     Integer getCount();
 
-    List<AnnouncementModel> findAnnouncementByUserId(String userId);
+    List<AnnouncementModel> findAnnouncementByUserId(String userId, Integer noOfDisplay);
 
     List<AnnouncementModel> findAnnouncementByUserIdGrouped(String userId);
 

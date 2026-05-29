@@ -23,6 +23,11 @@ public class ConfigController {
         return new ApiResponseModel(configService.getBarangayDetails());
     }
 
+    @GetMapping("/getHotlines")
+    public ApiResponseModel getHotlines() {
+        return new ApiResponseModel(configService.getHotlines());
+    }
+
     @GetMapping("/findConfigById/{id}")
     public ApiResponseModel findConfigById(@PathVariable String id) {
         return new ApiResponseModel(configService.findConfigById(id));
