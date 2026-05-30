@@ -73,6 +73,9 @@ public class UsersReturnModel {
     private String tempHouseholdForSave;
     private Integer isBrgyOfficial;
 
+    private List<String> householdMembers;
+    private String householdMembersString;
+
     public UsersReturnModel(UsersModel modelObj) {
         this.id = modelObj.getId();
         this.cd = modelObj.getCd();

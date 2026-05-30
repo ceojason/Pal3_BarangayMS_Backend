@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -750,12 +751,23 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             returnObj.setBlock(modelObj.getBlock());
             returnObj.setLot(modelObj.getLot());
             returnObj.setIsHouseholdHead(modelObj.getIsHouseholdHead());
+            returnObj.setIsHouseholdHeadString(YesOrNoEnum.getDescByKey(modelObj.getIsHouseholdHead()));
             returnObj.setStreet(modelObj.getStreet());
             returnObj.setHouseholdKey(modelObj.getHouseholdKey());
 
             Optional<HouseholdModel> household = householdJDBCRepository.findById(modelObj.getHouseholdKey());
             household.ifPresent(householdModel -> returnObj.setTempHouseholdForSave(householdModel.getHouseholdDesc()));
 
+            List<UsersModel> members = usersJDBCRepository.findByHouseholdKeys(List.of(modelObj.getHouseholdKey()));
+            List<String> memberNames = new ArrayList<>();
+            if (members!=null && !members.isEmpty()) {
+                memberNames = members.stream().map(UsersModel::getFullNm).toList();
+                String tempMembers = members.stream()
+                        .map(UsersModel::getFullNm2)
+                        .collect(Collectors.joining(", "));
+                returnObj.setHouseholdMembersString(tempMembers);
+            }
+            returnObj.setHouseholdMembers(memberNames);
 
             returnObj.setIsHouseholdHead(modelObj.getIsHouseholdHead());
 

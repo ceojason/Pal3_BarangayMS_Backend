@@ -211,7 +211,7 @@ public class ConfigServiceImpl extends BaseServiceImpl implements ConfigService 
     private FeePricingModel buildModel(Integer docSubCatKey, BigDecimal fee) {
         FeePricingModel model = new FeePricingModel();
         model.setDocSubCatKey(docSubCatKey);
-        model.setProcessFee(fee);
+        model.setProcessFee(fee!=null ? fee : BigDecimal.valueOf(0));
         return model;
     }
 
