@@ -189,10 +189,17 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
                     errorList.add("Is Household Head" + IS_REQUIRED_SUFFIX);
                 }else{
                     if (modelObj.getIsHouseholdHead().equals(YesOrNoEnum.YES.getKey())) {
+                        String householdId = modelObj.getHouseholdKey()!=null ? modelObj.getHouseholdKey() : savedUser.get().getHouseholdKey();
                         String uniqueKey = modelObj.getTempUniqueKey();
                         String userHouseholdKey = savedUser.get().getHouseholdKey();
                         boolean hasSavedHousehold = false;
 
+                        Optional<HouseholdModel> tempHousehold = Optional.of(new HouseholdModel());
+                        if (uniqueKey==null && householdId!=null) {
+                            tempHousehold = householdJDBCRepository.findById(householdId);
+                            uniqueKey = tempHousehold.map(HouseholdModel::getHouseholdUniqKey).orElse(null);
+                            if (uniqueKey==null) throwErrorMessage("An error occurred. Transaction cannot be processed.");
+                        }
                         List<HouseholdModel> hhList = householdJDBCRepository.findDuplicateHouseholdList(uniqueKey);
 
                         if (hhList!=null && !hhList.isEmpty()) {
