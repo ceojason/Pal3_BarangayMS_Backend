@@ -92,7 +92,7 @@ public class UsersReturnModel {
         this.civilStatusKey = modelObj.getCivilStatusKey();
         this.civilStatusString = CivilStatusEnum.getCivilStatusDescByKey(civilStatusKey);
         this.mobileNo = modelObj.getMobileNo();
-        this.formattedMobileNo = modelObj.getFormattedMobileNo();
+        this.formattedMobileNo = modelObj.formattedMobileNo();
         this.homeAddress = modelObj.getHomeAddress();
         this.emailAddress = modelObj.getEmailAddress();
         this.occupation = modelObj.getOccupation();

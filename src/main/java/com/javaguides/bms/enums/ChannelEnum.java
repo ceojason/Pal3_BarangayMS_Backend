@@ -45,4 +45,11 @@ public enum ChannelEnum {
         val.add(ALL.getKey());
         return val;
     }
+
+    public static List<Integer> sendViaSmsKeys() {
+        List<Integer> val = new ArrayList<>();
+        val.add(SMS.key);
+        val.add(ALL.key);
+        return val;
+    }
 }

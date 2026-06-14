@@ -192,14 +192,14 @@ public class CommReportServiceImpl extends BaseServiceImpl implements CommReport
         // SMS / EMAIL LOGIC
         // =========================
         SmsModel sms = new SmsModel();
-        if (user.get().getMobileNo() != null && user.get().getMobileNo().startsWith("0")) {
-            user.get().setFormattedMobileNo("+63" + user.get().getMobileNo().substring(1));
-        }
+        //if (user.get().getMobileNo() != null && user.get().getMobileNo().startsWith("0")) {
+        //    user.get().setFormattedMobileNo("+63" + user.get().getMobileNo().substring(1));
+        //}
 
         String otherDetailString = modelObj.getReportTypeKey()!=null && !modelObj.getReportTypeKey().equals(CommReportTypeEnum.OTHER.getKey())
                 ? CommReportTypeEnum.getDescBKey(modelObj.getReportTypeKey()) : modelObj.getOthTitle();
 
-        sms.setRecipient(user.get().getFormattedMobileNo());
+        sms.setRecipient(user.get().formattedMobileNo());
         sms.setMessage("Hi, " + user.get().getFirstNm() + "! Your Community Report " + otherDetailString + " with Ref. No: " + refNo + " has been submitted successfully.");
 
         if (user.get().getEmailAddress() != null) {

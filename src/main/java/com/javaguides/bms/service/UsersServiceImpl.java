@@ -253,10 +253,10 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             checkIfOnlyNumber(modelObj.getMobileNo(), "Mobile Number", errorList);
             maxStringCharCounter(modelObj.getMobileNo(), 11, "Mobile Number", errorList);
             minStringCharCounter(modelObj.getMobileNo(), 11, "Mobile Number", errorList);
-            String to = modelObj.getMobileNo();
-            if (modelObj.getMobileNo().startsWith("0")) {
-                modelObj.setFormattedMobileNo("+63" + to.substring(1));
-            }
+//            String to = modelObj.getMobileNo();
+//            if (modelObj.getMobileNo().startsWith("0")) {
+//                modelObj.setFormattedMobileNo("+63" + to.substring(1));
+//            }
         }
 
         if (modelObj.getEmailAddress()!=null) {
@@ -383,7 +383,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         String msg = "Hi, " + modelObj.getFirstNm()  + "! You have been successfully registered in Barangay eConnect System! Below are your temporary credentials.\n\n User ID: " + defaultCd + ", Password: " + defaultPass;
 
         SmsModel sms = new SmsModel();
-        sms.setRecipient(modelObj.getFormattedMobileNo());
+        sms.setRecipient(modelObj.formattedMobileNo());
         sms.setMessage(msg);
         smsService.sendSms(sms);
 
@@ -444,7 +444,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
         String msg = "Hi, " + modelObj.getFirstNm()  + "! You details has been successfully updated in Barangay eConnect System.";
 
         SmsModel sms = new SmsModel();
-        sms.setRecipient(modelObj.getFormattedMobileNo());
+        sms.setRecipient(modelObj.formattedMobileNo());
         sms.setMessage(msg);
         smsService.sendSms(sms);
 
@@ -696,7 +696,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
 
             String msg = "Hi, " + modelObj.getFirstNm()  + "! Your account was successfully reset. User ID: " + defaultCd + ", Password: " + defaultPass;
             SmsModel sms = new SmsModel();
-            sms.setRecipient(modelObj.getFormattedMobileNo());
+            sms.setRecipient(modelObj.formattedMobileNo());
             sms.setMessage(msg);
             smsService.sendSms(sms);
 
@@ -795,7 +795,7 @@ public class UsersServiceImpl extends BaseServiceImpl implements UsersService {
             );
 
             returnObj.setMobileNo(modelObj.getMobileNo());
-            returnObj.setFormattedMobileNo(modelObj.getFormattedMobileNo());
+            returnObj.setFormattedMobileNo(modelObj.formattedMobileNo());
             returnObj.setHomeAddress(modelObj.getHomeAddress());
             returnObj.setEmailAddress(modelObj.getEmailAddress());
             returnObj.setOccupation(modelObj.getOccupation());

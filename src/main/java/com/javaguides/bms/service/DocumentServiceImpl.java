@@ -17,6 +17,7 @@ import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.DocumentReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
 import com.javaguides.bms.service.baseservice.EmailService;
+import com.javaguides.bms.service.baseservice.SmsService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +35,7 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
     private final DocumentJDBCRepository documentJDBCRepository;
     private final EmailService emailService;
     private final ConfigService configService;
+    private final SmsService smsService;
 
     @Override
     public DocumentReturnModel validateRequest(DocumentRequest documentRequest, String userId) {
@@ -171,16 +173,16 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
                 modelObj.setPhaseKey(user.get().getPhaseKey());
             }
 
-            if (user.get().getMobileNo() != null && user.get().getMobileNo().startsWith("0")) {
-                user.get().setFormattedMobileNo("+63" + user.get().getMobileNo().substring(1));
-            }
-            sms.setRecipient(user.get().getFormattedMobileNo());
+//            if (user.get().getMobileNo() != null && user.get().getMobileNo().startsWith("0")) {
+//                user.get().setFormattedMobileNo("+63" + user.get().getMobileNo().substring(1));
+//            }
+            sms.setRecipient(user.get().formattedMobileNo());
             sms.setMessage("Hi, " + user.get().getFirstNm() + "! Your " + DocumentCategoryEnum.getDocuCatDescByKey(modelObj.getDocuCategoryKey()) + " - " + DocumentSubCatEnum.getDocuSubCatDescByKey(modelObj.getDocuSubCategoryKey()) + " request has been submitted successfully.");
 
             if (user.get().getEmailAddress()!=null) {
                 emailService.sendSimpleEmailNotif(user.get().getEmailAddress(), LogsTypeEnum.DOCUMENT_REQUEST.getMainAction(), sms.getMessage());
             }
-            //smsService.sendSms(sms);
+            smsService.sendSms(sms);
         }else{
             throwErrorMessage("Document request cannot proceed at this time.");
         }
@@ -312,9 +314,9 @@ public class DocumentServiceImpl extends BaseServiceImpl implements DocumentServ
             }
 
             SmsModel sms = new SmsModel();
-            sms.setRecipient(user.get().getFormattedMobileNo());
+            sms.setRecipient(user.get().formattedMobileNo());
             sms.setMessage(message);
-            //smsService.sendSms(sms);
+            smsService.sendSms(sms);
 
             NotifLogsModel notifLogsModel = new NotifLogsModel();
             notifLogsModel.setRefNo(generateReferenceNumber(null));

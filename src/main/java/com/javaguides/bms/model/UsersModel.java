@@ -107,8 +107,12 @@ public class UsersModel extends BaseModel {
     @Transient
     private String householdDesc;
 
-    @Transient
-    private String formattedMobileNo;
+    public String formattedMobileNo() {
+        if (mobileNo!=null && !mobileNo.isEmpty()) {
+            return "+63" + mobileNo.substring(1);
+        }
+        return "";
+    }
 
     @Transient
     private List<Integer> residentClassKeys;
@@ -285,7 +289,7 @@ public class UsersModel extends BaseModel {
             setGender(request.getGender());
             setCivilStatusKey(request.getCivilStatusKey());
             setMobileNo(request.getMobileNo());
-            setFormattedMobileNo(request.getFormattedMobileNo());
+            //setFormattedMobileNo(request.getFormattedMobileNo());
             setEmailAddress(request.getEmailAddress());
             setPhaseKey(request.getPhaseKey());
             //setHomeAddress(request.getHomeAddress());

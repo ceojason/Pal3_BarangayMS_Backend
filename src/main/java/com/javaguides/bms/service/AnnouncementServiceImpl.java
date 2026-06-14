@@ -11,11 +11,13 @@ import com.javaguides.bms.model.AnnouncementModel;
 import com.javaguides.bms.model.LoginCreds;
 import com.javaguides.bms.model.NotifLogsModel;
 import com.javaguides.bms.model.UsersModel;
+import com.javaguides.bms.model.basemodel.SmsModel;
 import com.javaguides.bms.model.requestmodel.EnrollmentRequest;
 import com.javaguides.bms.model.requestmodel.searchrequest.MainSearchRequest;
 import com.javaguides.bms.model.returnmodel.AnnouncementReturnModel;
 import com.javaguides.bms.service.baseservice.BaseServiceImpl;
 import com.javaguides.bms.service.baseservice.EmailService;
+import com.javaguides.bms.service.baseservice.SmsService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,7 +37,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
     private final NotifLogsJDBCRepository notifLogsJDBCRepository;
     private final LoginJDBCRepository loginJDBCRepository;
     private final EmailService emailService;
-
+    private final SmsService smsService;
     private UsersJDBCRepository usersJDBCRepository;
 
     @Override
@@ -164,6 +166,7 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
         List<NotifLogsModel> notifList = new ArrayList<>();
 
         boolean sendViaEmail = request.getIsSmsEmail()!=null && ChannelEnum.sendViaEmailKeys().contains(request.getIsSmsEmail());
+        boolean sendViaSms = request.getIsSmsEmail()!=null && ChannelEnum.sendViaSmsKeys().contains(request.getIsSmsEmail());
         String emailHeader = request.getHeader();
         if (returnModel.getAnnouncementModels()!=null && !returnModel.getAnnouncementModels().isEmpty()) {
             returnModel.getAnnouncementModels().forEach(modelObj -> {
@@ -199,6 +202,10 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                             emailHeader + ": " + AlertStatusEnum.getDesc3ByKey(modelObj.getAlertStatus()) + " Announcement",
                             finalMsg.toString()
                     );
+                }
+
+                if (sendViaSms && modelObj.getMobileNo()!=null) {
+
                 }
             });
         }

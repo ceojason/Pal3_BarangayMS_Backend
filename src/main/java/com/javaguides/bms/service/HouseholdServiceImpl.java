@@ -255,7 +255,7 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
                         String msg = "Hi, " + head.getFirstNm() + "! Your household was set to " + SystemStatusEnum.getDscpByKey(tempStatus) + ".";
 
                         SmsModel sms = new SmsModel();
-                        sms.setRecipient(head.getFormattedMobileNo());
+                        sms.setRecipient(head.formattedMobileNo());
                         sms.setMessage(msg);
                         smsService.sendSms(sms);
 
@@ -273,7 +273,7 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
             String msgForOldHead = "Hi, " + oldHead.getFirstNm() + "! You have been removed as the household head for " + modelObj.getHouseholdDesc() + ".";
 
             SmsModel oldHeadSms = new SmsModel();
-            oldHeadSms.setRecipient(oldHead.getFormattedMobileNo());
+            oldHeadSms.setRecipient(oldHead.formattedMobileNo());
             oldHeadSms.setMessage(msgForOldHead);
             smsService.sendSms(oldHeadSms);
 
@@ -286,7 +286,7 @@ public class HouseholdServiceImpl extends BaseServiceImpl implements HouseholdSe
             String msgForNewHead = "Hi, " + newHead.get().getFirstNm() + "! You have been assigned as the household head for " + modelObj.getHouseholdDesc() + ".";
 
             SmsModel newHeadSms = new SmsModel();
-            newHeadSms.setRecipient(newHead.get().getFormattedMobileNo());
+            newHeadSms.setRecipient(newHead.get().formattedMobileNo());
             newHeadSms.setMessage(msgForNewHead);
             smsService.sendSms(newHeadSms);
 
