@@ -205,7 +205,10 @@ public class AnnouncementServiceImpl extends BaseServiceImpl implements Announce
                 }
 
                 if (sendViaSms && modelObj.getMobileNo()!=null) {
-
+                    SmsModel sms = new SmsModel();
+                    sms.setRecipient(modelObj.formattedMobileNo());
+                    sms.setMessage(modelObj.getMessage());
+                    smsService.sendSms(sms);
                 }
             });
         }

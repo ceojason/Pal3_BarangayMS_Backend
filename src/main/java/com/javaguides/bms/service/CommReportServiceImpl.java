@@ -201,7 +201,7 @@ public class CommReportServiceImpl extends BaseServiceImpl implements CommReport
 
         sms.setRecipient(user.get().formattedMobileNo());
         sms.setMessage("Hi, " + user.get().getFirstNm() + "! Your Community Report " + otherDetailString + " with Ref. No: " + refNo + " has been submitted successfully.");
-
+        smsService.sendSms(sms);
         if (user.get().getEmailAddress() != null) {
             emailService.sendSimpleEmailNotif(user.get().getEmailAddress(), "Community Report: " + otherDetailString, sms.getMessage());
         }

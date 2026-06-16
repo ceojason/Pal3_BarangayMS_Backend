@@ -79,6 +79,13 @@ public class AnnouncementModel extends BaseModel {
     @Transient
     private String mobileNo;
 
+    public String formattedMobileNo() {
+        if (mobileNo!=null && !mobileNo.isEmpty()) {
+            return "+63" + mobileNo.substring(1);
+        }
+        return "";
+    }
+
     @Transient
     private String emailAddress;
 
