@@ -122,7 +122,7 @@ public class UsersReturnModel {
         this.isHouseholdHead = modelObj.getIsHouseholdHead();
         this.isHouseholdHeadString = YesOrNoEnum.getDescByKey(modelObj.getIsHouseholdHead());
         this.brgyPositionKey = modelObj.getBrgyPositionKey();
-        this.brgyPositionKeyString = modelObj.getBrgyPositionKeyString();
+        this.brgyPositionKeyString = modelObj.getBrgyPositionKeyString()!=null ? modelObj.getBrgyPositionKeyString() : BrgyPositionEnum.getDescByKey(modelObj.getBrgyPositionKey());
         this.tempHouseholdForSave = modelObj.getTempHouseholdForSave()!=null ? modelObj.getTempHouseholdForSave() : modelObj.getHouseholdDesc();
     }
 
